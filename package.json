@@ -1,0 +1,15 @@
+{
+    "name": "VinaChess",
+    "version": "0.0.1",
+    "description": "Vietnam Chess Network",
+    "dependencies": {
+        "socket.io": "latest",
+        "moniker": "latest"
+    },
+    "author": "chung",
+    "engines": {
+        "node": "latest",
+        "npm": "latest"
+    }
+
+}
