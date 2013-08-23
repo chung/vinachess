@@ -1,0 +1,19 @@
+<NotepadPlus>
+    <Project name="vinachess">
+        <File name=".gitignore" />
+        <File name="index.js" />
+        <File name="package.json" />
+        <File name="page.html" />
+        <File name="Procfile" />
+        <File name="README.md" />
+        <File name="server.js" />
+        <File name="SpecRunner.html" />
+        <Folder name="spec">
+            <File name="spec\BoardSpec.js" />
+            <File name="spec\PieceSpec.js" />
+            <File name="spec\README.md" />
+            <File name="spec\RuleSpec.js" />
+            <File name="spec\SpecHelper.js" />
+        </Folder>
+    </Project>
+</NotepadPlus>
