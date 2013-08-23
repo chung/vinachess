@@ -7,6 +7,12 @@ beforeEach(function() {
 	  board.click(origin.x, origin.y);
 	  board.click(x, y);
 	  return board.at(x, y) === piece;
-	}
+	},
+    started: function() {
+      var b = this.actual;
+      return b.white === vnc.Piece.START &&
+             b.black === vnc.Piece.START &&
+             b.turn === vnc.Piece.WHITE;
+    }
   });
 });
