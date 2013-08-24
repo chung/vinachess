@@ -10,9 +10,9 @@ beforeEach(function() {
 	},
     started: function() {
       var b = this.actual;
-      return b.white === vnc.Piece.START &&
-             b.black === vnc.Piece.START &&
-             b.turn === vnc.Piece.WHITE;
+      return b.turn === vnc.Piece.WHITE &&
+             JSON.stringify(b.white) === JSON.stringify(vnc.Piece.START) &&
+             JSON.stringify(b.black) === JSON.stringify(vnc.Piece.START);
     }
   });
 });

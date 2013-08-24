@@ -23,18 +23,28 @@ describe("Chess server", function() {
 describe("Chess board", function() {
   var b;
   beforeEach(function() {
-    b = new vnc.Board();
+    b = new vnc.Server('chung', 'son').board('son');
   });
 
   it("should have been initialized correctly when start new game", function() {
-    b.newGame();
     expect(b).started();
   });
 
-  it("should alternate side if start new game again", function() {
-    b.newGame();
+  it("should allow white to move first", function() {
     expect(b.turn).toEqual(vnc.Piece.WHITE);
-    b.newGame();
-    expect(b.turn).toEqual(vnc.Piece.BLACK);
+  });
+
+  it("should correctly move piece", function() {
+    b.move('P2-5');
+    b.move('M2.3');
+    expect(b.white.P).toEqual(['c5', 'c8']);
+    expect(b.black.M).toEqual(['c3', 'a8']);
+  });
+
+  it("should correctly move the same piece for black & white", function() {
+    b.move('P2-5');
+    b.move('P2-5');
+    expect(b.white.P).toEqual(['c5', 'c8']);
+    expect(b.black.P).toEqual(['c5', 'c8']);
   });
 });
