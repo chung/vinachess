@@ -69,6 +69,7 @@ vnc.Board = function() {
     var ma = m.match(re);
     var type = ma[1], x1 = ma[2], op = ma[3], x2 = ma[4];
     var locs = this[this.color()][type]; // locations of pieces
+
     for (var i = 0; i < locs.length; i++) {
       var loc = locs[i];
       ma = loc.match(/(\w+)(\d)/);
@@ -90,27 +91,47 @@ vnc.Board = function() {
           } else {
             x = x1;
           }
-          var index = letter.indexOf(ma[1]) + (op === '.') ? inc : -inc;
+          var index = letter.indexOf(ma[1]) + (op === '.' ? inc : -inc);
           to = letter[index] + x;
         }
         return {type: type, from: from, to: to};
       }
-      else {
-        // FIXME: should throw error ?
-        console.log('Error: no matching for move: ' + this.color() + m);
-      }
     }
+    // FIXME: should throw error if still here ?
+    console.log('Error: no matching for move: ' + this.color() + m);
   };
 
   this.move = function(m) {
     var mv = this.parse(m);
     this.update(mv.from, null, this.turn);
     this.update(mv.to, mv.type, this.turn);
-    var types = this[this.color()][mv.type];
-    types.splice([types.indexOf(mv.from)], 1, to);
+    // get all piece of this type
+    var ps = this[this.color()][mv.type];
+    // replace the old position with new position
+    ps.splice([ps.indexOf(mv.from)], 1, to);
     this.history.push(m);
     this.turn = vnc.Piece.WHITE - this.turn;
+    // need to remove the captured piece if any:
+    var x = vnc.Piece.X + 1 - parseInt(mv.to[1]);
+    var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(mv.to[0]);
+    var p = this.find(vnc.Piece.LETTER[y] + x);
+    if (p) { // piece captured
+      this.update(p.pos, null, this.turn); // update grid
+      this[this.color()][p.type].splice(p.index, 1); // update white/black pieces
+    }
   };
+
+  // find a piece at this position for the color pieces
+  // if no color specified, use the current color of the board (turn)
+  this.find = function(pos, color) {
+    var all = this[color || this.color()];
+    for (var type in all) {
+    var index = all[type].indexOf(pos);
+      if (index >= 0) {
+        return {index: index, pos: pos, type: type};
+      }
+    }
+  }
 
   this.init = function() {
     this.grid = new Array(vnc.Piece.Y);
@@ -123,7 +144,6 @@ vnc.Board = function() {
 
   this.updateAll = function(color) {
     var pieces = color ? this.white : this.black;
-    //console.log(pieces);
     for (var p in pieces) {
       var pos = pieces[p];
       if (typeof(pos) === 'string') {

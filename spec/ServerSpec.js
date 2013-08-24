@@ -23,7 +23,8 @@ describe("Chess server", function() {
 describe("Chess board", function() {
   var b;
   beforeEach(function() {
-    b = new vnc.Server('chung', 'son').board('son');
+    b = new vnc.Board();
+    b.newGame();
   });
 
   it("should have been initialized correctly when start new game", function() {
@@ -34,11 +35,13 @@ describe("Chess board", function() {
     expect(b.turn).toEqual(vnc.Piece.WHITE);
   });
 
-  it("should correctly move piece", function() {
-    b.move('P2-5');
-    b.move('M2.3');
-    expect(b.white.P).toEqual(['c5', 'c8']);
-    expect(b.black.M).toEqual(['c3', 'a8']);
+  it("should correctly move pieces", function() {
+    b.move('P2-5'); b.move('M2.3');
+    b.move('P8.2'); b.move('X1.1');
+    b.move('P5/1'); b.move('M3/5');
+    expect(b.white.P).toEqual(['b5', 'e8']);
+    expect(b.black.M).toEqual(['b5', 'a8']);
+    expect(b.black.X).toEqual(['b1', 'a9']);
   });
 
   it("should correctly move the same piece for black & white", function() {
@@ -47,4 +50,18 @@ describe("Chess board", function() {
     expect(b.white.P).toEqual(['c5', 'c8']);
     expect(b.black.P).toEqual(['c5', 'c8']);
   });
+
+  it("should correctly capture piece", function() {
+    b.move('P2.7');
+    b.move('P2.7');
+    expect(b.white.P).toEqual(['j2', 'c8']);
+    expect(b.black.P).toEqual(['j2', 'c8']);
+    expect(b.white.M).toEqual(['a2']); // a8 captured
+    expect(b.black.M).toEqual(['a2']); // a8 captured
+    b.move('X9-8');
+    expect(b.black.P).toEqual(['c8']); // j2 captured
+    b.move('X9-8');
+    expect(b.white.P).toEqual(['c8']); // j2 captured
+  });
+
 });
