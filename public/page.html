@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VinaChess: the best place to play chess</title>
+  <link rel="stylesheet" href="chess.css" />
+  <!--script src="/socket.io/socket.io.js"></script-->
+  <script src="../server.js"></script>
+  <script type="text/javascript">
+  window.onload = function() {
+
+    var welcome = document.getElementById("welcome");
+    var allUsers = document.getElementById("users");
+    var progress = document.getElementById("progress");
+    var results = document.getElementById("results");
+  };
+  </script>
+</head>
+<body class="main">
+  <div id="board">
+  </div>
+  <div id="welcome"></div>
+  <hr />
+  <div id="progress"></div>
+  <div id="win">150</div>
+  <hr />
+  <div id="users"></div>
+  <hr />
+  <div id="results"></div>
+  <script type="text/javascript">
+    var server = new vnc.Server('chung', 'son');
+    var board = document.getElementById("board");
+    board.innerHTML = server.board('son').move('P2-5').move('P2-5').move('M2.3').move('P5.4').move('M3.5').toHtml();
+  </script>
+</body>
+</html>

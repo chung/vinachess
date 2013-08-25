@@ -53,11 +53,12 @@ describe("Chess board", function() {
 
   it("should correctly capture piece", function() {
     b.move('P2.7');
-    b.move('P2.7');
     expect(b.white.P).toEqual(['j2', 'c8']);
+    expect(b.black.M).toEqual(['a2']); // a8 captured
+    expect(b.grid[0][7]).toEqual('P1'); // white P
+    b.move('P2.7');
     expect(b.black.P).toEqual(['j2', 'c8']);
     expect(b.white.M).toEqual(['a2']); // a8 captured
-    expect(b.black.M).toEqual(['a2']); // a8 captured
     b.move('X9-8');
     expect(b.black.P).toEqual(['c8']); // j2 captured
     b.move('X9-8');

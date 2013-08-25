@@ -1,0 +1,148 @@
+html, body {
+    margin: 0;
+    padding: 20px;
+    font-family: Tahoma;
+    font-size: 16px;
+}
+#progress {
+    cursor: pointer;
+    background: #61AC33;
+    padding: 10px;
+    text-align: right;
+    font-weight: bold;
+    color: #FFF;
+}
+#progress:active {
+    color: #FFF;
+    background: #000;
+}
+#win {
+    width: 150px;
+    padding: 10px;
+    text-align: right;
+    font-weight: bold;
+    border-right: solid 1px #000;
+}
+#board {
+    position: relative;
+    overflow: hidden;
+    width: 468px;
+    height: 521px;
+    background: url("images/board.gif");
+}
+.piece {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    display: inline-block;
+}
+.piece:hover {
+    border: 1px solid red;
+}
+.selected {
+    border: 1px solid green;
+}
+.X0 { background: url("images/pieces.gif") 0px -50px; }
+.X1 { background: url("images/pieces.gif") 0px 0px; }
+.M0 { background: url("images/pieces.gif") -50px -50px; }
+.M1 { background: url("images/pieces.gif") -50px 0px; }
+.T0 { background: url("images/pieces.gif") -100px -50px; }
+.T1 { background: url("images/pieces.gif") -100px 0px; }
+.S0 { background: url("images/pieces.gif") -150px -50px; }
+.S1 { background: url("images/pieces.gif") -150px 0px; }
+.Tg0 { background: url("images/pieces.gif") -200px -50px; }
+.Tg1 { background: url("images/pieces.gif") -200px 0px; }
+.P0 { background: url("images/pieces.gif") -251px -50px; }
+.P1 { background: url("images/pieces.gif") -250px 0px; }
+.B0 { background: url("images/pieces.gif") -301px -50px; }
+.B1 { background: url("images/pieces.gif") -300px 0px; }
+.a1 { left: 8px; top: 8px; }
+.a2 { left: 59px; top: 8px; }
+.a3 { left: 110px; top: 8px; }
+.a4 { left: 161px; top: 8px; }
+.a5 { left: 212px; top: 8px; }
+.a6 { left: 263px; top: 8px; }
+.a7 { left: 314px; top: 8px; }
+.a8 { left: 365px; top: 8px; }
+.a9 { left: 416px; top: 8px; }
+.b1 { left: 8px; top: 58.5px; }
+.b2 { left: 59px; top: 58.5px; }
+.b3 { left: 110px; top: 58.5px; }
+.b4 { left: 161px; top: 58.5px; }
+.b5 { left: 212px; top: 58.5px; }
+.b6 { left: 263px; top: 58.5px; }
+.b7 { left: 314px; top: 58.5px; }
+.b8 { left: 365px; top: 58.5px; }
+.b9 { left: 416px; top: 58.5px; }
+.c1 { left: 8px; top: 109px; }
+.c2 { left: 59px; top: 109px; }
+.c3 { left: 110px; top: 109px; }
+.c4 { left: 161px; top: 109px; }
+.c5 { left: 212px; top: 109px; }
+.c6 { left: 263px; top: 109px; }
+.c7 { left: 314px; top: 109px; }
+.c8 { left: 365px; top: 109px; }
+.c9 { left: 416px; top: 109px; }
+.d1 { left: 8px; top: 159.5px; }
+.d2 { left: 59px; top: 159.5px; }
+.d3 { left: 110px; top: 159.5px; }
+.d4 { left: 161px; top: 159.5px; }
+.d5 { left: 212px; top: 159.5px; }
+.d6 { left: 263px; top: 159.5px; }
+.d7 { left: 314px; top: 159.5px; }
+.d8 { left: 365px; top: 159.5px; }
+.d9 { left: 416px; top: 159.5px; }
+.e1 { left: 8px; top: 210px; }
+.e2 { left: 59px; top: 210px; }
+.e3 { left: 110px; top: 210px; }
+.e4 { left: 161px; top: 210px; }
+.e5 { left: 212px; top: 210px; }
+.e6 { left: 263px; top: 210px; }
+.e7 { left: 314px; top: 210px; }
+.e8 { left: 365px; top: 210px; }
+.e9 { left: 416px; top: 210px; }
+.f1 { left: 8px; top: 260.5px; }
+.f2 { left: 59px; top: 260.5px; }
+.f3 { left: 110px; top: 260.5px; }
+.f4 { left: 161px; top: 260.5px; }
+.f5 { left: 212px; top: 260.5px; }
+.f6 { left: 263px; top: 260.5px; }
+.f7 { left: 314px; top: 260.5px; }
+.f8 { left: 365px; top: 260.5px; }
+.f9 { left: 416px; top: 260.5px; }
+.g1 { left: 8px; top: 311px; }
+.g2 { left: 59px; top: 311px; }
+.g3 { left: 110px; top: 311px; }
+.g4 { left: 161px; top: 311px; }
+.g5 { left: 212px; top: 311px; }
+.g6 { left: 263px; top: 311px; }
+.g7 { left: 314px; top: 311px; }
+.g8 { left: 365px; top: 311px; }
+.g9 { left: 416px; top: 311px; }
+.h1 { left: 8px; top: 361.5px; }
+.h2 { left: 59px; top: 361.5px; }
+.h3 { left: 110px; top: 361.5px; }
+.h4 { left: 161px; top: 361.5px; }
+.h5 { left: 212px; top: 361.5px; }
+.h6 { left: 263px; top: 361.5px; }
+.h7 { left: 314px; top: 361.5px; }
+.h8 { left: 365px; top: 361.5px; }
+.h9 { left: 416px; top: 361.5px; }
+.i1 { left: 8px; top: 412px; }
+.i2 { left: 59px; top: 412px; }
+.i3 { left: 110px; top: 412px; }
+.i4 { left: 161px; top: 412px; }
+.i5 { left: 212px; top: 412px; }
+.i6 { left: 263px; top: 412px; }
+.i7 { left: 314px; top: 412px; }
+.i8 { left: 365px; top: 412px; }
+.i9 { left: 416px; top: 412px; }
+.j1 { left: 8px; top: 462.5px; }
+.j2 { left: 59px; top: 462.5px; }
+.j3 { left: 110px; top: 462.5px; }
+.j4 { left: 161px; top: 462.5px; }
+.j5 { left: 212px; top: 462.5px; }
+.j6 { left: 263px; top: 462.5px; }
+.j7 { left: 314px; top: 462.5px; }
+.j8 { left: 365px; top: 462.5px; }
+.j9 { left: 416px; top: 462.5px; }

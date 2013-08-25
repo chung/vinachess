@@ -116,9 +116,10 @@ vnc.Board = function() {
     var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(mv.to[0]);
     var p = this.find(vnc.Piece.LETTER[y] + x);
     if (p) { // piece captured
-      this.update(p.pos, null, this.turn); // update grid
-      this[this.color()][p.type].splice(p.index, 1); // update white/black pieces
+      // remove the piece from its collection
+      this[this.color()][p.type].splice(p.index, 1);
     }
+    return this;
   };
 
   // find a piece at this position for the color pieces
@@ -156,22 +157,30 @@ vnc.Board = function() {
     }
   };
 
-  // update('a5', 'Tg', WHITE) should set grid[9][4] = '1Tg'
+  // update('c2', 'P', WHITE) should set grid[7][7] = 'P1'
+  // update('c2', 'P', BLACK) should set grid[2][1] = 'P0'
   this.update = function(pos, type, color) {
-    var x = parseInt(pos[1])-1;
-    var y = Math.abs(color*(vnc.Piece.Y - 1) - vnc.Piece.LETTER.indexOf(pos[0]));
-    this.grid[y][x] = type ? color + type : '';
+    var x = Math.abs(color * (vnc.Piece.X - 1) - (parseInt(pos[1]) - 1));
+    var y = Math.abs(color * (vnc.Piece.Y - 1) - vnc.Piece.LETTER.indexOf(pos[0]));
+    this.grid[y][x] = type ? (type + color) : '';
   };
+
+  this.toHtml = function() {
+    var html = '';
+    for (var y = 0; y < vnc.Piece.Y; y++) {
+      for (var x = 0; x < vnc.Piece.X; x++) {
+        var type = this.grid[y][x];
+        var pos = vnc.Piece.LETTER[y] + (x+1);
+        var klass = "piece " + type + ' ' + pos;
+        html += '<div class="' + klass + '"></div>';
+        //console.log('.' + pos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
+      }
+      html += '\n';
+    }
+    return html;
+  }
 };
 
 
-//var b = new vnc.Server('chung', 'son').board('son');
+//var b = new vnc.Server('chung', 'son').board('son').move('P2-5').move('P2-5').move('P5.4');
 //console.log(b.grid);
-//console.log(b.parse('B7.1'));
-//console.log(vnc.Piece.START);
-//b.move('P2-5');
-//b.move('M2-3');
-//console.log(vnc.Piece.START);
-//b.move('P2-5'); b.move('P2-5');
-//b.move('M2-3'); b.move('M8-7');
-//console.log(b.black);
