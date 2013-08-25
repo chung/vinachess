@@ -24,6 +24,13 @@ vnc.Server = function() {
     }
   };
 
+  this.unjoin = function(person) {
+    var index = this.users.indexOf(person);
+    if (index >= 0) {
+      this.users.splice(index, 1);
+    }
+  };
+
   this.board = function(person) {
     for (var i = 0; i < this.boards.length; i++) {
       var b = this.boards[i];
@@ -169,10 +176,10 @@ vnc.Board = function() {
     var html = '';
     for (var y = 0; y < vnc.Piece.Y; y++) {
       for (var x = 0; x < vnc.Piece.X; x++) {
-        var type = this.grid[y][x];
+        var type = this.grid[y][x] || '';
         var pos = vnc.Piece.LETTER[y] + (x+1);
-        var klass = "piece " + type + ' ' + pos;
-        html += '<div class="' + klass + '"></div>';
+        var klass = "piece " + pos + ' ' + type;
+        html += '<div class="' + klass + '" onclick=handleClick(\'' + pos + '\',\'' + type + '\');></div>';
         //console.log('.' + pos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
       }
       html += '\n';
@@ -181,6 +188,8 @@ vnc.Board = function() {
   }
 };
 
+var module = module || {};
+module.exports = vnc;
 
 //var b = new vnc.Server('chung', 'son').board('son').move('P2-5').move('P2-5').move('P5.4');
 //console.log(b.grid);

@@ -23,13 +23,31 @@ io.configure(function () {
   io.set("polling duration", 10); 
 });
 */
+
+var vnc = require('./src/server.js');
+var server = new vnc.Server();
+//var board = document.getElementById("board");
+//board.innerHTML = server.board('son').move('P2-5').move('P2-5').move('M2.3').move('P5.4').move('M3.5').toHtml();
+
 // socket.io
 io.sockets.on('connection', function (socket) {
 	var user = addUser();
 	updateWidth();
 	socket.emit("welcome", user);
-	socket.on('disconnect', function () {
+    server.join(user.name);
+    var b = server.boards[0];
+    if (b) {
+      console.log('\n\n\nstarting new game:\n\n\n');
+      io.sockets.emit("game", {html: b.toHtml(), users: server.users});
+    }
+	socket.on('disconnect', function() {
 		removeUser(user);
+        server.unjoin(user.name);
+  	});
+	socket.on('send', function(data) {
+		console.log(data);
+        b.move(data.message);
+        io.sockets.emit("game", {html: b.toHtml(), users: server.users});
   	});
   	socket.on("click", function() {
   		currentWidth += 1;

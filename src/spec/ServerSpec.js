@@ -17,6 +17,16 @@ describe("Chess server", function() {
     expect(b.wplayer).toEqual('chung');
     expect(b.bplayer).toEqual('son');
   });
+
+  it("should be able to unjoin users", function() {
+    expect(s.users.length).toEqual(0);
+    s.join('chung');
+    s.join('son');
+    expect(s.users.length).toEqual(2);
+    s.unjoin('chung');
+    expect(s.users.length).toEqual(1);
+    expect(s.users[0]).toEqual('son');
+  });
 });
 
 

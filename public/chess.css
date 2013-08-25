@@ -29,7 +29,27 @@ html, body {
     width: 468px;
     height: 521px;
     background: url("images/board.gif");
+    display: inline-block;
 }
+#content {
+    display: inline-block;
+    width: 500px;
+    height: 521px;
+    margin-left: 100px;
+}
+#field {
+    width: 425px;
+    border: solid 1px black;    
+}
+#chatarea {
+    display: inline-block;
+    width: 468px;
+    height: 300px;
+    padding: 10px;
+    border: solid 1px #999;
+    overflow-y: scroll;
+}
+
 .piece {
     position: absolute;
     width: 44px;
