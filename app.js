@@ -1,24 +1,28 @@
-var handler = function(req, res) {
-	fs.readFile('./page.html', function (err, data) {
-	    if(err) throw err;
-	    res.writeHead(200);
-		res.end(data);
-	});
-}
-var app = require('http').createServer(handler);
-var io = require('socket.io').listen(app);
 var fs = require('fs');
+var express = require('express');
+var app = express();
 var Moniker = require('moniker');
 var port = process.env.PORT || 5000;
 
-app.listen(port);
+app.use(express.static(__dirname + '/public'));
+app.get("/server.js", function(req, res){
+  fs.readFile('./src/server.js', function (err, data) {
+    if(err) throw err;
+    res.writeHead(200);
+    res.end(data);
+  });
+});
+
+var io = require('socket.io').listen(app.listen(port));
+
 console.log("Listening on port " + port);
+/*
 // need this for heroku
 io.configure(function () { 
   io.set("transports", ["xhr-polling"]); 
   io.set("polling duration", 10); 
 });
-
+*/
 // socket.io
 io.sockets.on('connection', function (socket) {
 	var user = addUser();

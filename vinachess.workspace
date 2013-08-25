@@ -1,19 +1,39 @@
 <NotepadPlus>
     <Project name="vinachess">
+        <Folder name="public">
+            <Folder name="images">
+                <File name="public\images\board.gif" />
+                <File name="public\images\pieces.gif" />
+            </Folder>
+            <File name="public\chess.css" />
+            <File name="public\chess.js" />
+            <File name="public\index.html" />
+        </Folder>
+        <Folder name="src">
+            <Folder name="lib">
+                <Folder name="jasmine-1.3.1">
+                    <File name="src\lib\jasmine-1.3.1\jasmine-html.js" />
+                    <File name="src\lib\jasmine-1.3.1\jasmine.css" />
+                    <File name="src\lib\jasmine-1.3.1\jasmine.js" />
+                    <File name="src\lib\jasmine-1.3.1\MIT.LICENSE" />
+                </Folder>
+            </Folder>
+            <Folder name="spec">
+                <File name="src\spec\BoardSpec.js" />
+                <File name="src\spec\PieceSpec.js" />
+                <File name="src\spec\README.md" />
+                <File name="src\spec\RuleSpec.js" />
+                <File name="src\spec\ServerSpec.js" />
+                <File name="src\spec\SpecHelper.js" />
+            </Folder>
+            <File name="src\server.js" />
+            <File name="src\SpecRunner.html" />
+        </Folder>
         <File name=".gitignore" />
-        <File name="index.js" />
+        <File name="app.js" />
         <File name="package.json" />
-        <File name="page.html" />
         <File name="Procfile" />
         <File name="README.md" />
-        <File name="server.js" />
-        <File name="SpecRunner.html" />
-        <Folder name="spec">
-            <File name="spec\BoardSpec.js" />
-            <File name="spec\PieceSpec.js" />
-            <File name="spec\README.md" />
-            <File name="spec\RuleSpec.js" />
-            <File name="spec\SpecHelper.js" />
-        </Folder>
+        <File name="vinachess.workspace" />
     </Project>
 </NotepadPlus>
