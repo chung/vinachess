@@ -17,17 +17,17 @@ html, body {
 }
 #content {
     display: inline-block;
-    width: 500px;
+    width: 400px;
     height: 521px;
-    margin-left: 50px;
+    margin-left: 30px;
 }
 #field {
-    width: 435px;
+    width: 335px;
     border: solid 1px black;    
 }
 #chat {
     display: inline-block;
-    width: 468px;
+    width: 368px;
     height: 300px;
     padding: 10px;
     border: solid 1px #999;
@@ -36,7 +36,7 @@ html, body {
 }
 #users {
     height: 120px;
-    width: 490px;
+    width: 390px;
     overflow-y: scroll;
     font-size: 12px;
 }

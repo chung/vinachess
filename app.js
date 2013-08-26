@@ -37,7 +37,6 @@ io.sockets.on('connection', function (socket) {
     socket.emit("welcome", user);
     server.join(user.name);
     if (server.boards[0]) {
-        console.log('\n\n\nstarting new game:\n\n\n');
         broadcast(server.boards[0]);
     }
     socket.on('disconnect', function() {
@@ -51,7 +50,6 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.emit("updateChat", { message: m2 });
     });
     socket.on('send', function(data) {
-        console.log(data);
         if (server.boards[0]) {
             server.boards[0].move(data.message);
             broadcast(server.boards[0]);

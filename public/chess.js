@@ -47,7 +47,7 @@ window.onload = function() {
 
     socket.on('welcome', function (data) {
         user = data.name;
-        welcome.innerHTML = "<strong>" + data.name + "</strong>: welcome to vinachess.net, please enjoy.";
+        welcome.innerHTML = "<strong>" + data.name + "</strong>: welcome to vinachess.net";
     });
     socket.on('updateChat', function (data) {
         chatElem.innerHTML = data.message + '<br/>' + chatElem.innerHTML;
