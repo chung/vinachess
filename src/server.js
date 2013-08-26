@@ -69,127 +69,233 @@ vnc.Board = function() {
     }
     this.init();
   };
+};
 
-  // parse('P2-5') = {from: 'c2', to: 'c5', type: 'P'}
-  this.parse = function(m) {
-    var re = /(\w+)(\d)([\.|\-|\/])(\d)/;
-    var ma = m.match(re);
-    var type = ma[1], x1 = ma[2], op = ma[3], x2 = ma[4];
-    var locs = this[this.color()][type]; // locations of pieces
+// parse('P2-5') = {from: 'c2', to: 'c5', type: 'P'}
+vnc.Board.prototype.parse = function(m) {
+  var re = /(\w+)(\d)([\.|\-|\/])(\d)/;
+  var ma = m.match(re);
+  var type = ma[1], x1 = ma[2], op = ma[3], x2 = ma[4];
+  var locs = this[this.color()][type]; // locations of pieces
 
-    for (var i = 0; i < locs.length; i++) {
-      var loc = locs[i];
-      ma = loc.match(/(\w+)(\d)/);
-      if (ma[2] === x1) { // found a matching
-        var from = to = loc, x = x2;
-        // move side way
-        if (op === '-') {
-          to = ma[1] + x;
-        } // forward or backward
-        else if (op === '.' || op === '/') {
-          var inc = parseInt(x2);
-          var letter = vnc.Piece.LETTER;
-          if (type === 'T') {
-            inc = 2;
-          } else if (type === 'S') {
-            inc = 1;
-          } else if (type === 'M') {
-            inc = 3 - Math.abs(x1-x2);
-          } else {
-            x = x1;
-          }
-          var index = letter.indexOf(ma[1]) + (op === '.' ? inc : -inc);
-          to = letter[index] + x;
+  for (var i = 0; i < locs.length; i++) {
+    var loc = locs[i];
+    ma = loc.match(/(\w+)(\d)/);
+    if (ma[2] === x1) { // found a matching
+      var from = to = loc, x = x2;
+      // move side way
+      if (op === '-') {
+        to = ma[1] + x;
+      } // forward or backward
+      else if (op === '.' || op === '/') {
+        var inc = parseInt(x2);
+        var letter = vnc.Piece.LETTER;
+        if (type === 'T') {
+          inc = 2;
+        } else if (type === 'S') {
+          inc = 1;
+        } else if (type === 'M') {
+          inc = 3 - Math.abs(x1-x2);
+        } else {
+          x = x1;
         }
-        return {type: type, from: from, to: to};
+        var index = letter.indexOf(ma[1]) + (op === '.' ? inc : -inc);
+        to = letter[index] + x;
       }
-    }
-    // FIXME: should throw error if still here ?
-    console.log('Error: no matching for move: ' + this.color() + m);
-  };
-
-  this.move = function(m) {
-    var mv = this.parse(m);
-    this.update(mv.from, null, this.turn);
-    this.update(mv.to, mv.type, this.turn);
-    // get all piece of this type
-    var ps = this[this.color()][mv.type];
-    // replace the old position with new position
-    ps.splice([ps.indexOf(mv.from)], 1, to);
-    this.history.push(m);
-    this.turn = vnc.Piece.WHITE - this.turn;
-    // need to remove the captured piece if any:
-    var x = vnc.Piece.X + 1 - parseInt(mv.to[1]);
-    var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(mv.to[0]);
-    var p = this.find(vnc.Piece.LETTER[y] + x);
-    if (p) { // piece captured
-      // remove the piece from its collection
-      this[this.color()][p.type].splice(p.index, 1);
-    }
-    return this;
-  };
-
-  // find a piece at this position for the color pieces
-  // if no color specified, use the current color of the board (turn)
-  this.find = function(pos, color) {
-    var all = this[color || this.color()];
-    for (var type in all) {
-    var index = all[type].indexOf(pos);
-      if (index >= 0) {
-        return {index: index, pos: pos, type: type};
-      }
+      return {type: type, from: from, to: to};
     }
   }
+  // FIXME: should throw error if still here ?
+  console.log('Error: no matching for move: ' + this.color() + m);
+};
 
-  this.init = function() {
-    this.grid = new Array(vnc.Piece.Y);
-    for (var i = 0; i < this.grid.length; i++) {
-      this.grid[i] = new Array(vnc.Piece.X);
+vnc.Board.prototype.move = function(m) {
+  var mv = this.parse(m);
+  this.update(mv.from, null, this.turn);
+  this.update(mv.to, mv.type, this.turn);
+  // get all piece of this type
+  var ps = this[this.color()][mv.type];
+  // replace the old position with new position
+  ps.splice([ps.indexOf(mv.from)], 1, to);
+  this.history.push(m);
+  this.turn = vnc.Piece.WHITE - this.turn;
+  // need to remove the captured piece if any:
+  var x = vnc.Piece.X + 1 - parseInt(mv.to[1]);
+  var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(mv.to[0]);
+  var p = this.find(vnc.Piece.LETTER[y] + x);
+  if (p) { // piece captured
+    // remove the piece from its collection
+    this[this.color()][p.type].splice(p.index, 1);
+  }
+  return this;
+};
+
+// find a piece at this position for the color pieces
+// if no color specified, use the current color of the board (turn)
+vnc.Board.prototype.find = function(pos, color) {
+  var all = this[color || this.color()];
+  for (var type in all) {
+  var index = all[type].indexOf(pos);
+    if (index >= 0) {
+      return {index: index, pos: pos, type: type};
     }
-    this.updateAll(vnc.Piece.WHITE);
-    this.updateAll(vnc.Piece.BLACK);
-  };
+  }
+}
 
-  this.updateAll = function(color) {
-    var pieces = color ? this.white : this.black;
-    for (var p in pieces) {
-      var pos = pieces[p];
-      if (typeof(pos) === 'string') {
-        this.update(pos, p, color);
-      } else if (pos.length) {
-        for (var k = 0; k < pos.length; k++) {
-          this.update(pos[k], p, color);
-        }
+vnc.Board.prototype.init = function() {
+  this.grid = new Array(vnc.Piece.Y);
+  for (var i = 0; i < this.grid.length; i++) {
+    this.grid[i] = new Array(vnc.Piece.X);
+  }
+  this.updateAll(vnc.Piece.WHITE);
+  this.updateAll(vnc.Piece.BLACK);
+};
+
+vnc.Board.prototype.updateAll = function(color) {
+  var pieces = color ? this.white : this.black;
+  for (var p in pieces) {
+    var pos = pieces[p];
+    if (typeof(pos) === 'string') {
+      this.update(pos, p, color);
+    } else if (pos.length) {
+      for (var k = 0; k < pos.length; k++) {
+        this.update(pos[k], p, color);
       }
     }
-  };
-
-  // update('c2', 'P', WHITE) should set grid[7][7] = 'P1'
-  // update('c2', 'P', BLACK) should set grid[2][1] = 'P0'
-  this.update = function(pos, type, color) {
-    var x = Math.abs(color * (vnc.Piece.X - 1) - (parseInt(pos[1]) - 1));
-    var y = Math.abs(color * (vnc.Piece.Y - 1) - vnc.Piece.LETTER.indexOf(pos[0]));
-    this.grid[y][x] = type ? (type + color) : '';
-  };
-
-  this.toHtml = function() {
-    var html = '';
-    for (var y = 0; y < vnc.Piece.Y; y++) {
-      for (var x = 0; x < vnc.Piece.X; x++) {
-        var type = this.grid[y][x] || '';
-        var pos = vnc.Piece.LETTER[y] + (x+1);
-        var klass = "piece " + pos + ' ' + type;
-        html += '<div class="' + klass + '" onclick=handleClick(\'' + pos + '\',\'' + type + '\');></div>';
-        //console.log('.' + pos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
-      }
-      html += '\n';
-    }
-    return html;
   }
 };
 
+
+// update('c2', 'P', WHITE) should set grid[7][7] = 'P1'
+// update('c2', 'P', BLACK) should set grid[2][1] = 'P0'
+vnc.Board.prototype.update = function(pos, type, color) {
+  //console.log('update(' + pos + ',' + type + ',' + color + ')');
+  var p = vnc.Board.prototype.translate(pos, color);
+  this.grid[p.y][p.x] = type ? (type + color) : '';
+};
+
+vnc.Board.prototype.toHtml = function() {
+  var html = '';
+  for (var y = 0; y < vnc.Piece.Y; y++) {
+    for (var x = 0; x < vnc.Piece.X; x++) {
+      var type = this.grid[y][x] || '';
+      var pos = vnc.Piece.LETTER[y] + (x+1);
+      var klass = "piece " + pos + ' ' + type;
+      html += '<div class="' + klass + '" onclick="handleClick(this,\'' + pos + '\',\'' + type + '\');"></div>';
+      //console.log('.' + pos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
+    }
+    html += '\n';
+  }
+  return html;
+};
+
+// getMove(P1, h8, h7) = 'P2-3'
+// getMove(P0, c2, c6) = 'P2-6'
+vnc.Board.prototype.getMove = function(type, from, to) {
+  var c = parseInt(type[type.length-1]); // color: 0 for black, 1 for white
+  var t = type.substring(0, type.length-1); // piece type: M, X, P etc
+  var mid = vnc.Board.prototype.middle;
+  var tr = vnc.Board.prototype.translate;
+  var count = vnc.Board.prototype.countPiecesInBetween;
+  var p1 = tr(from);
+  var p2 = tr(to);
+  var t2 = this.grid[p2.y][p2.x] || '';
+  if (t2.indexOf(c+'') >= 0) return null; // trying to capture same color piece
+
+  var sign = 1 - 2*c; // White = -1, Black = 1
+  var movex = Math.pow(p2.x - p1.x, 2);
+  var movey = Math.pow(p2.y - p1.y, 2);
+  var oneStepOnly = (movex+movey) === 1;
+  var threeStepsL = (movex+movey) === 5;
+  var bigDiagonal = (movex+movey) === 8;
+  var smallDiagonal = (movex+movey) === 2;
+  var withinPalace = [3,4,5].indexOf(p2.x) >= 0 && [0,1,2,7,8,9].indexOf(p2.y);
+  var blockingPiece = this.grid[mid(p1.y, p2.y)][mid(p1.x, p2.x)];
+  var behindRiver = sign * (p2.y - 4.5) < 0;
+  var straightLine = movex === 0 || movey === 0;
+  var countInBetween = count(this.grid, p1.x, p1.y, p2.x, p2.y);
+  var movable = false;
+  var theMove = t + (tr(from, c).x + 1); // first part P2 of move string P2-5
+
+  var move = Math.abs(p2.y - p1.y);
+  var newx = tr(to, c).x + 1;
+  if (t === 'B') {
+    var forwardOnly = sign * (p1.y - p2.y) <= 0;
+    var sidewayOkAfterRiver = sign * (p1.y - 4.5) * movex >= 0;
+    movable = oneStepOnly && forwardOnly && sidewayOkAfterRiver;
+  }
+  else if (t === 'Tg') {
+    movable = oneStepOnly && withinPalace;
+  }
+  else if (t === 'M') {
+    movable = threeStepsL && !blockingPiece;
+    move = newx;
+  }
+  else if (t === 'T') {
+    movable = bigDiagonal && !blockingPiece && behindRiver;
+    move = newx;
+  }
+  else if (t === 'S') {
+    movable = smallDiagonal && withinPalace;
+    move = newx;
+  }
+  else if (t === 'X') {
+    movable = straightLine && countInBetween === 0;
+  }
+  else if (t === 'P') {
+    // capturing: PAO jumps over 1 piece to capture
+    if (t2 && t2.indexOf(c+'') < 0) {
+      movable = straightLine && countInBetween === 1;
+    } else {
+      // otherwise move like CHE
+      movable = straightLine && countInBetween === 0;
+    }
+  }
+
+  if (movable) {
+    if (movey === 0) {
+      theMove += '-';
+      move = newx;
+    } else {
+      theMove += ((p2.y - p1.y) * sign > 0) ? '.' : '/';
+    }
+    theMove += move;
+  }
+  return movable ? theMove : null;
+};
+
+vnc.Board.prototype.translate = function(pos, color) {
+  var x = parseInt(pos[1]) - 1;
+  var y = vnc.Piece.LETTER.indexOf(pos[0]);
+  if (color) {
+    x = vnc.Piece.X - 1 - x;
+    y = vnc.Piece.Y - 1 - y;
+  }
+  return {x: x, y: y};
+};
+
+vnc.Board.prototype.middle = function(x1, x2) {
+  var m = Math.floor((x1 + x2)/2);
+  return (x1 > x2) ? (m + x1 + x2 - 2*m) : m;
+}
+
+vnc.Board.prototype.countPiecesInBetween = function(grid, a1, b1, a2, b2) {
+  var c = 0;
+  if (a1 == a2) {
+    var inc = (b1 < b2) ? 1 : -1;
+    for (var b = b1 + inc; b !== b2; b += inc) {
+      if (grid[b][a1]) { c += 1; }
+    }
+  }
+  else if (b1 == b2) {
+    var inc = (a1 < a2) ? 1 : -1;
+    for (var a = a1 + inc; a !== a2; a += inc) {
+      if (grid[b1][a]) { c += 1; }
+    }
+  }
+  return c;
+};
+
+// export as node module
 var module = module || {};
 module.exports = vnc;
-
-//var b = new vnc.Server('chung', 'son').board('son').move('P2-5').move('P2-5').move('P5.4');
-//console.log(b.grid);

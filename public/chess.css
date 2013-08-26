@@ -41,7 +41,7 @@ html, body {
     width: 425px;
     border: solid 1px black;    
 }
-#chatarea {
+#chat {
     display: inline-block;
     width: 468px;
     height: 300px;
@@ -57,7 +57,7 @@ html, body {
     display: inline-block;
 }
 .piece:hover {
-    border: 1px solid red;
+    border: 1px solid green;
 }
 .selected {
     border: 1px solid green;

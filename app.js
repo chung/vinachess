@@ -16,83 +16,74 @@ app.get("/server.js", function(req, res){
 var io = require('socket.io').listen(app.listen(port));
 
 console.log("Listening on port " + port);
-/*
+
 // need this for heroku
 io.configure(function () { 
   io.set("transports", ["xhr-polling"]); 
   io.set("polling duration", 10); 
 });
-*/
+
 
 var vnc = require('./src/server.js');
 var server = new vnc.Server();
-//var board = document.getElementById("board");
-//board.innerHTML = server.board('son').move('P2-5').move('P2-5').move('M2.3').move('P5.4').move('M3.5').toHtml();
+
+var broadcast = function(board) {
+    io.sockets.emit("game", { html: board.toHtml(), users: server.users, board: board });
+}
 
 // socket.io
 io.sockets.on('connection', function (socket) {
-	var user = addUser();
-	updateWidth();
-	socket.emit("welcome", user);
+    var user = addUser(socket.handshake.address.address);
+    socket.emit("welcome", user);
     server.join(user.name);
-    var b = server.boards[0];
-    if (b) {
-      console.log('\n\n\nstarting new game:\n\n\n');
-      io.sockets.emit("game", {html: b.toHtml(), users: server.users});
+    if (server.boards[0]) {
+        console.log('\n\n\nstarting new game:\n\n\n');
+        broadcast(server.boards[0]);
     }
-	socket.on('disconnect', function() {
-		removeUser(user);
+    socket.on('disconnect', function() {
+        removeUser(user);
         server.unjoin(user.name);
-  	});
-	socket.on('send', function(data) {
-		console.log(data);
-        b.move(data.message);
-        io.sockets.emit("game", {html: b.toHtml(), users: server.users});
-  	});
-  	socket.on("click", function() {
-  		currentWidth += 1;
-  		user.clicks += 1;
-  		if(currentWidth == winWidth) {
-  			currentWidth = initialWidth;
-  			io.sockets.emit("win", { message: "<strong>" + user.name + "</strong> rocks!" });
-  		}
-  		updateWidth();
-  		updateUsers();
-  	});
+    });
+    socket.on('chat', function(data) {
+        var m1 = "<strong>" + data.username + "</strong>", m2 = data.username;
+        socket.emit("updateChat", { message: m1 + ': ' + data.message });
+        socket.broadcast.emit("updateChat", { message: m2 + ': ' + data.message });
+    });
+    socket.on('send', function(data) {
+        console.log(data);
+        if (server.boards[0]) {
+            server.boards[0].move(data.message);
+            broadcast(server.boards[0]);
+        }
+    });
 });
 
-// game logic
-var initialWidth = 20;
-var currentWidth = initialWidth;
-var winWidth = 30;
 var users = [];
 
-var addUser = function() {
-	var user = {
-		name: Moniker.choose(),
-		clicks: 0
-	}
-	users.push(user);
-	updateUsers();
-	return user;
+var addUser = function(address) {
+    var user = {
+        name: Moniker.choose(),
+        ip: address
+    }
+    users.push(user);
+    updateUsers();
+    return user;
 }
 var removeUser = function(user) {
-	for(var i=0; i<users.length; i++) {
-		if(user.name === users[i].name) {
-			users.splice(i, 1);
-			updateUsers();
-			return;
-		}
-	}
+    for(var i=0; i<users.length; i++) {
+        if(user.name === users[i].name) {
+            users.splice(i, 1);
+            updateUsers();
+            return;
+        }
+    }
 }
 var updateUsers = function() {
-	var str = '';
-	for(var i=0; i<users.length; i++) {
-		var user = users[i];
-		str += user.name + ' <small>(' + user.clicks + ' clicks)</small><br />';
-	}
-	io.sockets.emit("users", { users: str });
+    var str = '';
+    for(var i=0; i<users.length; i++) {
+        var user = users[i];
+        str += user.name + ' <small>(' + user.ip + ')</small><br />';
+    }
+    io.sockets.emit("users", { users: str });
 }
-var updateWidth = function() {
-	io.sockets.emit("update", { currentWidth: currentWidth });
-}
+
