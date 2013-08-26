@@ -45,6 +45,7 @@ html, body {
     width: 120px;
     font-weight: bold;
     margin-left: 24px;
+    margin-right: 60px;
     border: solid 0px green;
     display: inline-block;
     text-align: center;

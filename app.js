@@ -67,6 +67,11 @@ io.sockets.on('connection', function (socket) {
             broadcast(server.boards[0].redo());
         }
     });
+    socket.on('new', function() {
+        if (server.boards[0]) {
+            broadcast(server.boards[0].newGame());
+        }
+    });
 });
 
 var users = [];

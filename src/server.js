@@ -72,6 +72,7 @@ vnc.Board = function() {
                                white: vnc.copy(this.white),
                                black: vnc.copy(this.black),
                                grid:  vnc.copy(this.grid)};
+    return this;
  };
 };
 

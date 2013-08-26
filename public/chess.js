@@ -75,4 +75,8 @@ window.onload = function() {
     $('#redo').click(function() {
         socket.emit('redo');
     });
+
+    $('#new').click(function() {
+        socket.emit('new');
+    });
 }
