@@ -50,7 +50,7 @@ describe("Chess board", function() {
     b.move('P8.2'); b.move('X1.1');
     b.move('P5/1'); b.move('M3/5');
     expect(b.white.P).toEqual(['b5', 'e8']);
-    expect(b.black.M).toEqual(['b5', 'a8']);
+    expect(b.black.M).toEqual(['a8', 'b5']);
     expect(b.black.X).toEqual(['b1', 'a9']);
   });
 
@@ -85,12 +85,12 @@ describe("Chess board", function() {
     expect(b.getMove('B0', 'd3', 'e3')).toEqual('B3.1');
     expect(b.getMove('B0', 'd5', 'c5')).toEqual(null); // illegal move
     expect(b.getMove('Tg1', 'j5', 'i5')).toEqual('Tg5.1');
-    expect(b.getMove('Tg1', 'i5', 'i6')).toEqual('Tg5-4');
-    expect(b.getMove('Tg1', 'j5', 'i5')).toEqual('Tg5.1');
+    expect(b.getMove('Tg1', 'j5', 'j6')).toEqual(null);
+    expect(b.getMove('Tg0', 'a5', 'b5')).toEqual('Tg5.1');
     expect(b.getMove('Tg0', 'a5', 'b6')).toEqual(null);
     expect(b.getMove('S0', 'a4', 'b5')).toEqual('S4.5');
-    expect(b.getMove('S1', 'h4', 'i5')).toEqual('S6/5');
-    expect(b.getMove('S0', 'c4', 'b5')).toEqual('S4/5');
+    expect(b.getMove('S1', 'j4', 'i5')).toEqual('S6.5');
+    expect(b.getMove('S0', 'a4', 'b4')).toEqual(null);
     expect(b.getMove('M1', 'j8', 'h9')).toEqual('M2.1');
     expect(b.getMove('M1', 'j8', 'i6')).toEqual(null);
     expect(b.getMove('M0', 'a2', 'c3')).toEqual('M2.3');

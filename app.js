@@ -45,9 +45,10 @@ io.sockets.on('connection', function (socket) {
         server.unjoin(user.name);
     });
     socket.on('chat', function(data) {
-        var m1 = "<strong>" + data.username + "</strong>", m2 = data.username;
-        socket.emit("updateChat", { message: m1 + ': ' + data.message });
-        socket.broadcast.emit("updateChat", { message: m2 + ': ' + data.message });
+        var m1 = '<strong>' + data.username + ': <em>' + data.message + '</em></strong>';
+        var m2 = data.username + ': ' + data.message;
+        socket.emit("updateChat", { message: m1 });
+        socket.broadcast.emit("updateChat", { message: m2 });
     });
     socket.on('send', function(data) {
         console.log(data);
@@ -84,6 +85,6 @@ var updateUsers = function() {
         var user = users[i];
         str += user.name + ' <small>(' + user.ip + ')</small><br />';
     }
-    io.sockets.emit("users", { users: str });
+    io.sockets.emit("users", { users: str, count: users.length });
 }
 

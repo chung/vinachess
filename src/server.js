@@ -56,7 +56,6 @@ vnc.Server = function() {
 
 vnc.Board = function() {
   this.turn = 0;
-  this.color = function() { return vnc.Piece.color[this.turn]; };
 
   this.newGame = function(wp, bp) {
     this.white = JSON.parse(JSON.stringify(vnc.Piece.START));
@@ -71,17 +70,29 @@ vnc.Board = function() {
   };
 };
 
+vnc.Board.prototype.color = function(c) { return vnc.Piece.color[c || this.turn]; };
+
 // parse('P2-5') = {from: 'c2', to: 'c5', type: 'P'}
 vnc.Board.prototype.parse = function(m) {
   var re = /(\w+)(\d)([\.|\-|\/])(\d)/;
   var ma = m.match(re);
-  var type = ma[1], x1 = ma[2], op = ma[3], x2 = ma[4];
-  var locs = this[this.color()][type]; // locations of pieces
-
-  for (var i = 0; i < locs.length; i++) {
+  var type = ma[1].replace(/[s|t]/g, ''), x1 = ma[2], op = ma[3], x2 = ma[4];
+  var locs = this[this.color()][type].sort(); // locations of pieces sorted
+  var inc = 1, start = 0, skip = 0;
+  if (m.indexOf('t') >= 0) {
+    inc = -1; start = locs.length - 1;
+    if (m.indexOf('ts') >= 0) skip = 1;
+    else if (m.indexOf('tts') >= 0) skip = 2;
+    else if (m.indexOf('ttts') >= 0) skip = 3; // very unlikely, but possible
+  }
+  for (var i = start; i < locs.length && i >= 0; i += inc) {
     var loc = locs[i];
     ma = loc.match(/(\w+)(\d)/);
     if (ma[2] === x1) { // found a matching
+      if (skip > 0) {
+        skip -= 1;
+        continue;
+      }
       var from = to = loc, x = x2;
       // move side way
       if (op === '-') {
@@ -199,9 +210,23 @@ vnc.Board.prototype.getMove = function(type, from, to) {
   var count = vnc.Board.prototype.countPiecesInBetween;
   var p1 = tr(from);
   var p2 = tr(to);
+  var t1 = this.grid[p1.y][p1.x];
   var t2 = this.grid[p2.y][p2.x] || '';
-  if (t2.indexOf(c+'') >= 0) return null; // trying to capture same color piece
+  if (!t1) return null; // nothing to move
+  if (t2.indexOf(c) >= 0) return null; // trying to capture same color piece
 
+  // FIXME: this only work if 2 piece max at the same column (only B can have 3 or more)
+  var beforeAfter = ''; // if same column, append t or s if before or after, leave blank for middle
+  var all = this[vnc.Piece.color[c]][t].sort(); // all piece of the same type
+  var col = tr(from, c).x + 1; // get the right column to get before & after notation
+  var row = vnc.Piece.LETTER[tr(from, c).y]; // get the right alphabet
+  for (var i = 0; i < all.length; i++) {
+    var p = all[i];
+    if (p.indexOf(col) >= 0) {
+      if (p[0] > row) beforeAfter += 's';
+      else if (p[0] < row) beforeAfter += 't';
+    }
+  }
   var sign = 1 - 2*c; // White = -1, Black = 1
   var movex = Math.pow(p2.x - p1.x, 2);
   var movey = Math.pow(p2.y - p1.y, 2);
@@ -209,13 +234,13 @@ vnc.Board.prototype.getMove = function(type, from, to) {
   var threeStepsL = (movex+movey) === 5;
   var bigDiagonal = (movex+movey) === 8;
   var smallDiagonal = (movex+movey) === 2;
-  var withinPalace = [3,4,5].indexOf(p2.x) >= 0 && [0,1,2,7,8,9].indexOf(p2.y);
+  var withinPalace = [3,4,5].indexOf(p2.x) >= 0 && [0,1,2,7,8,9].indexOf(p2.y) >= 0;
   var blockingPiece = this.grid[mid(p1.y, p2.y)][mid(p1.x, p2.x)];
   var behindRiver = sign * (p2.y - 4.5) < 0;
   var straightLine = movex === 0 || movey === 0;
   var countInBetween = count(this.grid, p1.x, p1.y, p2.x, p2.y);
   var movable = false;
-  var theMove = t + (tr(from, c).x + 1); // first part P2 of move string P2-5
+  var theMove = t + beforeAfter + (tr(from, c).x + 1); // first part P2 of move string P2-5
 
   var move = Math.abs(p2.y - p1.y);
   var newx = tr(to, c).x + 1;
@@ -244,7 +269,7 @@ vnc.Board.prototype.getMove = function(type, from, to) {
   }
   else if (t === 'P') {
     // capturing: PAO jumps over 1 piece to capture
-    if (t2 && t2.indexOf(c+'') < 0) {
+    if (t2 && t2.indexOf(c) < 0) {
       movable = straightLine && countInBetween === 1;
     } else {
       // otherwise move like CHE

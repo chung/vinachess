@@ -53,11 +53,13 @@ window.onload = function() {
         chatElem.innerHTML = data.message + '<br/>' + chatElem.innerHTML;
     });
     socket.on('users', function (data) {
-        allUsers.innerHTML = "<strong>Users:</strong><br />" + data.users;
+        allUsers.innerHTML = "<strong>There are " + data.count + " online users:</strong><br />" + data.users;
     });
     socket.on('game', function (data) {
         board = data.board;
         boardElem.innerHTML = data.html;
+        var color = board.turn ? 'RED' : 'BLACK';
+        $('#turn').html(color).attr('class', color);
     });
 
     sendButton.onclick = sendMessage = function() {
