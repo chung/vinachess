@@ -62,6 +62,7 @@ vnc.Board = function() {
     this.black = JSON.parse(JSON.stringify(vnc.Piece.START));
     this.turn = vnc.Piece.WHITE;// - this.turn;
     this.history = [];
+    this.index = 0;
     if (wp && bp) {
       this.wplayer = wp;
       this.bplayer = bp;
@@ -121,6 +122,10 @@ vnc.Board.prototype.parse = function(m) {
 };
 
 vnc.Board.prototype.move = function(m) {
+  this.history[this.index] = { move: m,
+                               white: JSON.parse(JSON.stringify(this.white)),
+                               black: JSON.parse(JSON.stringify(this.black)),
+                               grid: JSON.parse(JSON.stringify(this.grid))};
   var mv = this.parse(m);
   this.update(mv.from, null, this.turn);
   this.update(mv.to, mv.type, this.turn);
@@ -128,7 +133,7 @@ vnc.Board.prototype.move = function(m) {
   var ps = this[this.color()][mv.type];
   // replace the old position with new position
   ps.splice([ps.indexOf(mv.from)], 1, to);
-  this.history.push(m);
+  this.index++;
   this.turn = vnc.Piece.WHITE - this.turn;
   // need to remove the captured piece if any:
   var x = vnc.Piece.X + 1 - parseInt(mv.to[1]);
@@ -137,6 +142,18 @@ vnc.Board.prototype.move = function(m) {
   if (p) { // piece captured
     // remove the piece from its collection
     this[this.color()][p.type].splice(p.index, 1);
+  }
+  return this;
+};
+
+vnc.Board.prototype.undo = function() {
+  if (this.index > 0) {
+    this.index--;
+    var hist = this.history[this.index];
+    this.grid = hist.grid;
+    this.white = hist.white;
+    this.black = hist.black;
+    this.turn = vnc.Piece.WHITE - this.turn;
   }
   return this;
 };

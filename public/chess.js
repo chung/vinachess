@@ -68,4 +68,7 @@ window.onload = function() {
         field.value = "";
     };
 
+    $('#undo').click(function() {
+        socket.emit('undo');
+    });
 }

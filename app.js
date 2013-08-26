@@ -57,6 +57,13 @@ io.sockets.on('connection', function (socket) {
             broadcast(server.boards[0]);
         }
     });
+    socket.on('undo', function() {
+        console.log('UNDO....');
+        if (server.boards[0]) {
+            //server.boards[0].undo();
+            broadcast(server.boards[0].undo());
+        }
+    });
 });
 
 var users = [];

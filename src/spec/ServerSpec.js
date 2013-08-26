@@ -96,4 +96,14 @@ describe("Chess board", function() {
     expect(b.getMove('M0', 'a2', 'c3')).toEqual('M2.3');
     expect(b.getMove('X1', 'j9', 'h9')).toEqual('X1.2');
   });
+
+  it("should be able to undo", function() {
+    expect(b.grid[7][7]).toEqual('P1');
+    b.move('P2-5');
+    expect(b.grid[7][7]).toEqual('');
+    expect(b.turn).toEqual(vnc.Piece.BLACK);
+    b.undo();
+    expect(b.turn).toEqual(vnc.Piece.WHITE);
+    expect(b.grid[7][7]).toEqual('P1');
+  });
 });
