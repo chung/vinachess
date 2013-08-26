@@ -4,6 +4,9 @@ html, body {
     font-family: Tahoma;
     font-size: 16px;
 }
+#control {
+    margin-bottom: 10px;
+}
 #board {
     position: relative;
     overflow: hidden;
@@ -16,7 +19,7 @@ html, body {
     display: inline-block;
     width: 500px;
     height: 521px;
-    margin-left: 100px;
+    margin-left: 50px;
 }
 #field {
     width: 435px;
@@ -39,7 +42,12 @@ html, body {
 }
 #turn {
     font-size: 30px;
+    width: 120px;
     font-weight: bold;
+    margin-left: 24px;
+    border: solid 0px green;
+    display: inline-block;
+    text-align: center;
 }
 .RED {
     color: red;

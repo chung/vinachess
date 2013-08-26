@@ -19,10 +19,7 @@
                 </Folder>
             </Folder>
             <Folder name="spec">
-                <File name="src\spec\BoardSpec.js" />
-                <File name="src\spec\PieceSpec.js" />
                 <File name="src\spec\README.md" />
-                <File name="src\spec\RuleSpec.js" />
                 <File name="src\spec\ServerSpec.js" />
                 <File name="src\spec\SpecHelper.js" />
             </Folder>

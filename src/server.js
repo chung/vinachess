@@ -58,17 +58,21 @@ vnc.Board = function() {
   this.turn = 0;
 
   this.newGame = function(wp, bp) {
-    this.white = JSON.parse(JSON.stringify(vnc.Piece.START));
-    this.black = JSON.parse(JSON.stringify(vnc.Piece.START));
+    this.white = vnc.copy(vnc.Piece.START);
+    this.black = vnc.copy(vnc.Piece.START);
     this.turn = vnc.Piece.WHITE;// - this.turn;
     this.history = [];
-    this.index = 0;
     if (wp && bp) {
       this.wplayer = wp;
       this.bplayer = bp;
     }
     this.init();
-  };
+    this.index = 0;
+    this.history[this.index] = { move: null,
+                               white: vnc.copy(this.white),
+                               black: vnc.copy(this.black),
+                               grid:  vnc.copy(this.grid)};
+ };
 };
 
 vnc.Board.prototype.color = function(c) { return vnc.Piece.color[c || this.turn]; };
@@ -122,10 +126,6 @@ vnc.Board.prototype.parse = function(m) {
 };
 
 vnc.Board.prototype.move = function(m) {
-  this.history[this.index] = { move: m,
-                               white: JSON.parse(JSON.stringify(this.white)),
-                               black: JSON.parse(JSON.stringify(this.black)),
-                               grid: JSON.parse(JSON.stringify(this.grid))};
   var mv = this.parse(m);
   this.update(mv.from, null, this.turn);
   this.update(mv.to, mv.type, this.turn);
@@ -133,7 +133,6 @@ vnc.Board.prototype.move = function(m) {
   var ps = this[this.color()][mv.type];
   // replace the old position with new position
   ps.splice([ps.indexOf(mv.from)], 1, to);
-  this.index++;
   this.turn = vnc.Piece.WHITE - this.turn;
   // need to remove the captured piece if any:
   var x = vnc.Piece.X + 1 - parseInt(mv.to[1]);
@@ -143,27 +142,48 @@ vnc.Board.prototype.move = function(m) {
     // remove the piece from its collection
     this[this.color()][p.type].splice(p.index, 1);
   }
+  this.index += 1;
+  this.history[this.index] = { move: m,
+                               white: vnc.copy(this.white),
+                               black: vnc.copy(this.black),
+                               grid:  vnc.copy(this.grid)};
+  // clear all the extra history: once move, cannot redo previous undos
+  this.history.splice(this.index + 1, this.history.length - this.index - 1);
   return this;
 };
 
 vnc.Board.prototype.undo = function() {
   if (this.index > 0) {
-    this.index--;
+    this.index -= 1;
     var hist = this.history[this.index];
-    this.grid = hist.grid;
-    this.white = hist.white;
-    this.black = hist.black;
+    this.grid = vnc.copy(hist.grid);
+    this.white = vnc.copy(hist.white);
+    this.black = vnc.copy(hist.black);
     this.turn = vnc.Piece.WHITE - this.turn;
   }
   return this;
 };
+
+vnc.Board.prototype.redo = function() {
+  if (this.index < this.history.length-1) {
+    this.index += 1;
+    var hist = this.history[this.index];
+    this.grid  = vnc.copy(hist.grid);
+    this.white = vnc.copy(hist.white);
+    this.black = vnc.copy(hist.black);
+    this.turn = vnc.Piece.WHITE - this.turn;
+  }
+  return this;
+};
+
+vnc.copy = function(o) { return JSON.parse(JSON.stringify(o)); };
 
 // find a piece at this position for the color pieces
 // if no color specified, use the current color of the board (turn)
 vnc.Board.prototype.find = function(pos, color) {
   var all = this[color || this.color()];
   for (var type in all) {
-  var index = all[type].indexOf(pos);
+    var index = all[type].indexOf(pos);
     if (index >= 0) {
       return {index: index, pos: pos, type: type};
     }

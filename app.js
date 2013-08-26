@@ -58,10 +58,13 @@ io.sockets.on('connection', function (socket) {
         }
     });
     socket.on('undo', function() {
-        console.log('UNDO....');
         if (server.boards[0]) {
-            //server.boards[0].undo();
             broadcast(server.boards[0].undo());
+        }
+    });
+    socket.on('redo', function() {
+        if (server.boards[0]) {
+            broadcast(server.boards[0].redo());
         }
     });
 });

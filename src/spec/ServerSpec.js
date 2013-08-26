@@ -106,4 +106,50 @@ describe("Chess board", function() {
     expect(b.turn).toEqual(vnc.Piece.WHITE);
     expect(b.grid[7][7]).toEqual('P1');
   });
+
+  it("should be able to undo twice", function() {
+    b.move('P2-5');
+    b.undo();
+    b.move('M2.3');
+    b.undo();
+    expect(b.grid[7][7]).toEqual('P1');
+    expect(b.grid[9][7]).toEqual('M1');
+  });
+
+  it("should be able to redo", function() {
+    expect(b.grid[7][7]).toEqual('P1');
+    b.move('P2-5');
+    b.undo();
+    expect(b.turn).toEqual(vnc.Piece.WHITE);
+    expect(b.grid[7][7]).toEqual('P1');
+    b.redo();
+    expect(b.turn).toEqual(vnc.Piece.BLACK);
+    expect(b.grid[7][7]).toEqual('');
+    expect(b.grid[7][4]).toEqual('P1');
+  });
+
+  it("should be able to clear the undo history after making new move", function() {
+    b.move('P2-5');
+    b.move('P8-5');
+    expect(b.grid[2][7]).toEqual('');
+    b.undo();
+    expect(b.turn).toEqual(vnc.Piece.BLACK);
+    expect(b.grid[2][7]).toEqual('P0');
+    b.redo();
+    expect(b.turn).toEqual(vnc.Piece.WHITE);
+    expect(b.grid[2][7]).toEqual('');
+    expect(b.grid[2][4]).toEqual('P0');
+    b.undo();
+    b.undo(); // back to start
+    b.move('M2.3'); // make a new move should clear history
+    expect(b.turn).toEqual(vnc.Piece.BLACK);
+    expect(b.grid[7][6]).toEqual('M1');
+    expect(b.grid[2][7]).toEqual('P0');
+    expect(b.grid[7][7]).toEqual('P1');
+    b.redo(); // so that nothing to redo
+    expect(b.turn).toEqual(vnc.Piece.BLACK);
+    expect(b.grid[7][6]).toEqual('M1');
+    expect(b.grid[2][7]).toEqual('P0');
+    expect(b.grid[7][7]).toEqual('P1');
+  });
 });
