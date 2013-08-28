@@ -8,14 +8,12 @@ describe("Chess server", function() {
     expect(s.users.length).toEqual(0);
   });
 
-  it("should start a new game if there are 2 users", function() {
+  it("should start a new game in public room if user join without a private room", function() {
     s.join('chung');
     s.join('son');
-    var b = s.board('chung');
+    var b = s.board();
     expect(s.users.length).toEqual(2);
     expect(b).started();
-    expect(b.wplayer).toEqual('chung');
-    expect(b.bplayer).toEqual('son');
   });
 
   it("should be able to unjoin users", function() {

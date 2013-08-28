@@ -21,15 +21,15 @@ vnc.Piece = {
 
 
 vnc.Server = function() {
-  this.boards = [];
+  this.boards = {};
   this.users = [];
 
-  this.join = function(person) {
+  this.join = function(person, room) {
+    var room = room || 'public';
     this.users.push(person);
-    if (this.users.length >= 2) {
-      var b = new vnc.Board();
-      b.newGame(this.users[0], this.users[1]);
-      this.boards.push(b);
+    if (!this.boards[room]) {
+        this.boards[room] = new vnc.Board();
+        this.boards[room].newGame();
     }
   };
 
@@ -40,21 +40,9 @@ vnc.Server = function() {
     }
   };
 
-  this.board = function(person) {
-    for (var i = 0; i < this.boards.length; i++) {
-      var b = this.boards[i];
-      if (b.wplayer === person || b.bplayer === person) {
-        return b;
-      }
-    }
-  };
-
-  this.process = function(data) {
-    var b = this.board(data.person);
-    if ((b.turn === vnc.Piece.WHITE && b.wplayer === data.person) ||
-        (b.turn === vnc.Piece.BLACK && b.bplayer === data.person)) {
-      b.move(data.move);
-    }
+  this.board = function(room) {
+    var room = room || 'public';
+    return this.boards[room];
   };
 
   for (var i = 0; i < arguments.length; i++) {

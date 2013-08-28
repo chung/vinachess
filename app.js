@@ -31,11 +31,18 @@ var server = new vnc.Server();
 // socket.io
 io.sockets.on('connection', function (socket) {
     var user = addUser(socket.handshake.address.address);
+    var board, room;
     socket.emit("welcome", user);
-    server.join(user.name);
-    if (server.boards[0]) {
-        io.sockets.emit("board", server.boards[0]);
-    }
+
+    socket.on('join', function(data) {
+        room = data.room;
+        socket.join(room);
+        user.room = room;
+        updateUsers();
+        server.join(user.name, room);
+        board = server.boards[room];
+        io.sockets.in(room).emit("board", board);
+    });
     socket.on('disconnect', function() {
         removeUser(user);
         server.unjoin(user.name);
@@ -44,28 +51,20 @@ io.sockets.on('connection', function (socket) {
         var m1 = '<strong>' + data.username + ': <em>' + data.message + '</em></strong>';
         var m2 = data.username + ': ' + data.message;
         socket.emit("updateChat", { message: m1 });
-        socket.broadcast.emit("updateChat", { message: m2 });
+        socket.broadcast.to(room).emit("updateChat", { message: m2 });
     });
     socket.on('send', function(data) {
-        if (server.boards[0]) {
-            server.boards[0].move(data.message);
-            socket.broadcast.emit("board", server.boards[0]);
-        }
+        board.move(data.message);
+        socket.broadcast.to(room).emit("board", board);
     });
     socket.on('undo', function() {
-        if (server.boards[0]) {
-            io.sockets.emit("board", server.boards[0].undo());
-        }
+        io.sockets.in(room).emit("board", board.undo());
     });
     socket.on('redo', function() {
-        if (server.boards[0]) {
-            io.sockets.emit("board", server.boards[0].redo());
-        }
+        io.sockets.in(room).emit("board", board.redo());
     });
     socket.on('new', function() {
-        if (server.boards[0]) {
-            io.sockets.emit("board", server.boards[0].newGame());
-        }
+        io.sockets.in(room).emit("board", board.newGame());
     });
 });
 
@@ -93,8 +92,18 @@ var updateUsers = function() {
     var str = '';
     for(var i=0; i<users.length; i++) {
         var user = users[i];
-        str += user.name + ' <small>(' + user.ip + ')</small><br />';
+        str += user.name + ' <small>(' + user.room + ')</small><br />';
     }
     io.sockets.emit("users", { users: str, count: users.length });
 }
+var findUser = function(username) {
+    for(var i=0; i<users.length; i++) {
+        if(username === users[i].name) {
+            return users[i];
+        }
+    }
+}
 
+app.get("/room/:id", function(req, res){
+  res.end('welcome to room: ' + req.params.id + '. your ip is ' + req.ip);
+});

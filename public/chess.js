@@ -15,9 +15,14 @@ window.onload = function() {
     var chatElem = document.getElementById("chat");
     var boardElem = document.getElementById("board");
     var board, user, last, rotation = vnc.Piece.BLACK;
-    var socket = io.connect(document.URL);
     var waitingForOther = false;
+    var url = document.URL;
+    var index = url.indexOf('room=');
+    var room = index < 0 ? 'public' : url.substring(index+5, url.length);
+    //alert(room);
 
+    var socket = io.connect(url);
+    socket.emit('join', { room: room });
     // handler for board click
     handleClick = function(elem, pos, type) {
         if (waitingForOther) return;
@@ -54,12 +59,15 @@ window.onload = function() {
         user = data.name;
         welcome.innerHTML = "<strong>" + data.name + "</strong>: welcome to vinachess.net";
     });
+
     socket.on('updateChat', function (data) {
         chatElem.innerHTML = data.message + '<br/>' + chatElem.innerHTML;
     });
+
     socket.on('users', function (data) {
         allUsers.innerHTML = "<strong>There are " + data.count + " online users:</strong><br />" + data.users;
     });
+
     socket.on('board', function (data) {
         board = data;
         waitingForOther = false;
