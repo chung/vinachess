@@ -1,4 +1,13 @@
 var vnc = {};
+
+vnc.copy = function(o) { return JSON.parse(JSON.stringify(o)); };
+// rotate(a1) = j9
+vnc.rotate = function(pos) {
+  var x = vnc.Piece.X + 1 - parseInt(pos[1]);
+  var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(pos[0]);
+  return vnc.Piece.LETTER[y] + x;
+}
+
 vnc.Piece = {
   X: 9, Y: 10,
   color: ['black', 'white'],
@@ -56,12 +65,12 @@ vnc.Server = function() {
 
 vnc.Board = function() {
   this.turn = 0;
-  this.lastMove = {};
 
   this.newGame = function(wp, bp) {
     this.white = vnc.copy(vnc.Piece.START);
     this.black = vnc.copy(vnc.Piece.START);
     this.turn = vnc.Piece.WHITE;// - this.turn;
+    this.lastMove = {};
     this.history = [];
     if (wp && bp) {
       this.wplayer = wp;
@@ -78,19 +87,20 @@ vnc.Board = function() {
 };
 
 vnc.Board.prototype.color = function(c) { return vnc.Piece.color[c || this.turn]; };
+vnc.color = function(c) { return vnc.Piece.color[c] };
 
 // parse('P2-5') = {from: 'c2', to: 'c5', type: 'P'}
-vnc.Board.prototype.parse = function(m) {
+vnc.parse = function(board, move, color) {
   var re = /(\w+)(\d)([\.|\-|\/])(\d)/;
-  var ma = m.match(re);
+  var ma = move.match(re);
   var type = ma[1].replace(/[s|t]/g, ''), x1 = ma[2], op = ma[3], x2 = ma[4];
-  var locs = this[this.color()][type].sort(); // locations of pieces sorted
+  var locs = board[vnc.color(color)][type].sort(); // locations of pieces sorted
   var inc = 1, start = 0, skip = 0;
-  if (m.indexOf('t') >= 0) {
+  if (move.indexOf('t') >= 0) {
     inc = -1; start = locs.length - 1;
-    if (m.indexOf('ts') >= 0) skip = 1;
-    else if (m.indexOf('tts') >= 0) skip = 2;
-    else if (m.indexOf('ttts') >= 0) skip = 3; // very unlikely, but possible
+    if (move.indexOf('ts') >= 0) skip = 1;
+    else if (move.indexOf('tts') >= 0) skip = 2;
+    else if (move.indexOf('ttts') >= 0) skip = 3; // very unlikely, but possible
   }
   for (var i = start; i < locs.length && i >= 0; i += inc) {
     var loc = locs[i];
@@ -124,15 +134,15 @@ vnc.Board.prototype.parse = function(m) {
     }
   }
   // FIXME: should throw error if still here ?
-  console.log('Error: no matching for move: ' + this.color() + m);
+  console.log('Error: no matching for move: ' + move);
 };
 
 vnc.Board.prototype.move = function(m) {
-  var mv = this.parse(m);
-  this.update(mv.from, null, this.turn);
-  this.update(mv.to, mv.type, this.turn);
+  var mv = vnc.parse(this, m, this.turn);
+  vnc.Board.prototype.update.call(this, mv.from, null, this.turn);
+  vnc.Board.prototype.update.call(this, mv.to, mv.type, this.turn);
   // get all piece of this type
-  var ps = this[this.color()][mv.type];
+  var ps = this[vnc.color(this.turn)][mv.type];
   // replace the old position with new position
   ps.splice([ps.indexOf(mv.from)], 1, to);
   this.turn = vnc.Piece.WHITE - this.turn;
@@ -140,11 +150,12 @@ vnc.Board.prototype.move = function(m) {
   var x = vnc.Piece.X + 1 - parseInt(mv.to[1]);
   var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(mv.to[0]);
   var lastPos = vnc.Piece.LETTER[y] + x;
-  this.lastMove.pos = this.turn ? mv.to : this.rotate(mv.to);
-  var p = this.find(lastPos);
+  this.lastMove.from = this.turn ? mv.from : vnc.rotate(mv.from);
+  this.lastMove.to = this.turn ? mv.to : vnc.rotate(mv.to);
+  var p = vnc.Board.prototype.find.call(this, lastPos);
   if (p) { // piece captured
     // remove the piece from its collection
-    this[this.color()][p.type].splice(p.index, 1);
+    this[vnc.color(this.turn)][p.type].splice(p.index, 1);
   }
   this.index += 1;
   this.history[this.index] = { move: m,
@@ -164,6 +175,7 @@ vnc.Board.prototype.undo = function() {
     this.white = vnc.copy(hist.white);
     this.black = vnc.copy(hist.black);
     this.turn = vnc.Piece.WHITE - this.turn;
+    this.lastMove = {}; // FIXME: get appropriate last move
   }
   return this;
 };
@@ -180,12 +192,10 @@ vnc.Board.prototype.redo = function() {
   return this;
 };
 
-vnc.copy = function(o) { return JSON.parse(JSON.stringify(o)); };
-
 // find a piece at this position for the color pieces
 // if no color specified, use the current color of the board (turn)
 vnc.Board.prototype.find = function(pos, color) {
-  var all = this[color || this.color()];
+  var all = this[vnc.color(color || this.turn)];
   for (var type in all) {
     var index = all[type].indexOf(pos);
     if (index >= 0) {
@@ -237,29 +247,27 @@ vnc.Board.prototype.toHtml = function(color) {
     for (var x = startx; x < vnc.Piece.X && x >= 0; x += incx) {
       var type = this.grid[y][x] || '';
       // FIXME: perform less tricky rotate for easier understanding
-      var pos = vnc.Piece.LETTER[Math.abs((vnc.Piece.Y-1)*c - y)] + Math.abs((vnc.Piece.X+1)*c - x - 1);
-      var klass = "piece " + pos + ' ' + type + (this.lastMove.pos === pos ? ' selected' : '');
-      html += '<div class="' + klass + '" onclick="handleClick(this,\'' + pos + '\',\'' + type + '\');"></div>';
-      //console.log('.' + pos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
+      // absolute position used for drawing piece
+      var absPos = vnc.Piece.LETTER[Math.abs((vnc.Piece.Y-1)*c - y)] + Math.abs((vnc.Piece.X+1)*c - x - 1);
+      // relative position, used for hightlight move
+      var relPos = color ? vnc.rotate(absPos) : absPos;
+      var hilight = (this.lastMove.from === relPos ? ' from' : '');
+      hilight += (this.lastMove.to === relPos ? ' to' : '')
+      var klass = "piece " + absPos + ' ' + type + hilight;
+      html += '<div class="' + klass + '" onclick="handleClick(this,\'' + absPos + '\',\'' + type + '\');"></div>';
+      //console.log('.' + absPos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
     }
     html += '\n';
   }
   return html;
 };
 
-// rotate(a1) = j9
-vnc.Board.prototype.rotate = function(pos) {
-  var x = vnc.Piece.X + 1 - parseInt(pos[1]);
-  var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(pos[0]);
-  return vnc.Piece.LETTER[y] + x;
-}
-
 // getMove(P1, h8, h7) = 'P2-3'
 // getMove(P0, c2, c6) = 'P2-6'
 vnc.Board.prototype.getMove = function(type, from, to, rotation) {
   if (rotation) {
-    from = vnc.Board.prototype.rotate(from);
-    to = vnc.Board.prototype.rotate(to);
+    from = vnc.rotate(from);
+    to = vnc.rotate(to);
   }
   var c = parseInt(type[type.length-1]); // color: 0 for black, 1 for white
   var t = type.substring(0, type.length-1); // piece type: M, X, P etc

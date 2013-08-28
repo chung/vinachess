@@ -16,9 +16,11 @@ window.onload = function() {
     var boardElem = document.getElementById("board");
     var board, user, last, rotation = vnc.Piece.BLACK;
     var socket = io.connect(document.URL);
+    var waitingForOther = false;
 
     // handler for board click
     handleClick = function(elem, pos, type) {
+        if (waitingForOther) return;
         // need to get piece selected first
         if (!last && type && type.indexOf(board.turn) >= 0) {
             elem.className += ' selected';
@@ -39,8 +41,10 @@ window.onload = function() {
                     // and select this one
                     elem.className = elem.className.replace(type, '') + ' selected ' + last.type;
                     console.log(move);
+                    board = vnc.Board.prototype.move.call(board, move); // move this board, then broadcast to others
                     socket.emit('send', { message: move, username: user });
                     last = null;
+                    waitingForOther = true;
                 }
             }
         }
@@ -58,6 +62,7 @@ window.onload = function() {
     });
     socket.on('board', function (data) {
         board = data;
+        waitingForOther = false;
         boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
         var color = board.turn ? 'RED' : 'BLACK';
         $('#turn').html(color).attr('class', color);

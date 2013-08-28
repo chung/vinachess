@@ -79,6 +79,12 @@ html, body {
 .selected {
     border: 1px solid green;
 }
+.from {
+    border: 1px solid gray;
+}
+.to {
+    border: 1px solid blue;
+}
 .X0 { background: url("images/pieces.gif") 0px -50px; }
 .X1 { background: url("images/pieces.gif") 0px 0px; }
 .M0 { background: url("images/pieces.gif") -50px -50px; }
