@@ -56,6 +56,7 @@ vnc.Server = function() {
 
 vnc.Board = function() {
   this.turn = 0;
+  this.lastMove = {};
 
   this.newGame = function(wp, bp) {
     this.white = vnc.copy(vnc.Piece.START);
@@ -138,7 +139,9 @@ vnc.Board.prototype.move = function(m) {
   // need to remove the captured piece if any:
   var x = vnc.Piece.X + 1 - parseInt(mv.to[1]);
   var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(mv.to[0]);
-  var p = this.find(vnc.Piece.LETTER[y] + x);
+  var lastPos = vnc.Piece.LETTER[y] + x;
+  this.lastMove.pos = this.turn ? mv.to : this.rotate(mv.to);
+  var p = this.find(lastPos);
   if (p) { // piece captured
     // remove the piece from its collection
     this[this.color()][p.type].splice(p.index, 1);
@@ -235,7 +238,7 @@ vnc.Board.prototype.toHtml = function(color) {
       var type = this.grid[y][x] || '';
       // FIXME: perform less tricky rotate for easier understanding
       var pos = vnc.Piece.LETTER[Math.abs((vnc.Piece.Y-1)*c - y)] + Math.abs((vnc.Piece.X+1)*c - x - 1);
-      var klass = "piece " + pos + ' ' + type;
+      var klass = "piece " + pos + ' ' + type + (this.lastMove.pos === pos ? ' selected' : '');
       html += '<div class="' + klass + '" onclick="handleClick(this,\'' + pos + '\',\'' + type + '\');"></div>';
       //console.log('.' + pos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
     }

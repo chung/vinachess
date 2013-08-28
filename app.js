@@ -27,9 +27,6 @@ io.configure(function () {
 var vnc = require('./src/server.js');
 var server = new vnc.Server();
 
-var broadcast = function(board) {
-    io.sockets.emit("game", { html: board.toHtml(), users: server.users, board: board });
-}
 
 // socket.io
 io.sockets.on('connection', function (socket) {
@@ -37,7 +34,7 @@ io.sockets.on('connection', function (socket) {
     socket.emit("welcome", user);
     server.join(user.name);
     if (server.boards[0]) {
-        broadcast(server.boards[0]);
+        io.sockets.emit("board", server.boards[0]);
     }
     socket.on('disconnect', function() {
         removeUser(user);
@@ -52,22 +49,22 @@ io.sockets.on('connection', function (socket) {
     socket.on('send', function(data) {
         if (server.boards[0]) {
             server.boards[0].move(data.message);
-            broadcast(server.boards[0]);
+            socket.broadcast.emit("board", server.boards[0]);
         }
     });
     socket.on('undo', function() {
         if (server.boards[0]) {
-            broadcast(server.boards[0].undo());
+            io.sockets.emit("board", server.boards[0].undo());
         }
     });
     socket.on('redo', function() {
         if (server.boards[0]) {
-            broadcast(server.boards[0].redo());
+            io.sockets.emit("board", server.boards[0].redo());
         }
     });
     socket.on('new', function() {
         if (server.boards[0]) {
-            broadcast(server.boards[0].newGame());
+            io.sockets.emit("board", server.boards[0].newGame());
         }
     });
 });

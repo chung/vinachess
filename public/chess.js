@@ -35,8 +35,9 @@ window.onload = function() {
                 var move = vnc.Board.prototype.getMove.call(board, last.type, last.pos, pos, rotation);
                 if (move) {
                     // remove the selected class for last selected elem
-                    var klass = last.elem.className;
-                    klass = klass.substring(0, klass.length-9);
+                    last.elem.className = 'piece ' + last.pos;
+                    // and select this one
+                    elem.className = elem.className.replace(type, '') + ' selected ' + last.type;
                     console.log(move);
                     socket.emit('send', { message: move, username: user });
                     last = null;
@@ -55,8 +56,8 @@ window.onload = function() {
     socket.on('users', function (data) {
         allUsers.innerHTML = "<strong>There are " + data.count + " online users:</strong><br />" + data.users;
     });
-    socket.on('game', function (data) {
-        board = data.board;
+    socket.on('board', function (data) {
+        board = data;
         boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
         var color = board.turn ? 'RED' : 'BLACK';
         $('#turn').html(color).attr('class', color);
