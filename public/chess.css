@@ -45,10 +45,19 @@ html, body {
     width: 120px;
     font-weight: bold;
     margin-left: 24px;
-    margin-right: 60px;
+    margin-right: 45px;
     border: solid 0px green;
     display: inline-block;
     text-align: center;
+}
+#rotate {
+    width: 22px;
+    height: 22px;
+    vertical-align: bottom;
+    margin-bottom: 2px;
+}
+#rotate:hover {
+    cursor: pointer;
 }
 .RED {
     color: red;

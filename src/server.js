@@ -223,12 +223,18 @@ vnc.Board.prototype.update = function(pos, type, color) {
   this.grid[p.y][p.x] = type ? (type + color) : '';
 };
 
-vnc.Board.prototype.toHtml = function() {
-  var html = '';
-  for (var y = 0; y < vnc.Piece.Y; y++) {
-    for (var x = 0; x < vnc.Piece.X; x++) {
+vnc.Board.prototype.toHtml = function(color) {
+  var html = '', starty = startx = 0, incy = incx = 1, c = color ? vnc.Piece.WHITE : vnc.Piece.BLACK;
+  if (c) {
+    starty = vnc.Piece.Y - 1;
+    startx = vnc.Piece.X - 1;
+    incy = incx = -1;
+  }
+  for (var y = starty; y < vnc.Piece.Y && y >= 0; y += incy) {
+    for (var x = startx; x < vnc.Piece.X && x >= 0; x += incx) {
       var type = this.grid[y][x] || '';
-      var pos = vnc.Piece.LETTER[y] + (x+1);
+      // FIXME: perform less tricky rotate for easier understanding
+      var pos = vnc.Piece.LETTER[Math.abs((vnc.Piece.Y-1)*c - y)] + Math.abs((vnc.Piece.X+1)*c - x - 1);
       var klass = "piece " + pos + ' ' + type;
       html += '<div class="' + klass + '" onclick="handleClick(this,\'' + pos + '\',\'' + type + '\');"></div>';
       //console.log('.' + pos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
@@ -238,9 +244,20 @@ vnc.Board.prototype.toHtml = function() {
   return html;
 };
 
+// rotate(a1) = j9
+vnc.Board.prototype.rotate = function(pos) {
+  var x = vnc.Piece.X + 1 - parseInt(pos[1]);
+  var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(pos[0]);
+  return vnc.Piece.LETTER[y] + x;
+}
+
 // getMove(P1, h8, h7) = 'P2-3'
 // getMove(P0, c2, c6) = 'P2-6'
-vnc.Board.prototype.getMove = function(type, from, to) {
+vnc.Board.prototype.getMove = function(type, from, to, rotation) {
+  if (rotation) {
+    from = vnc.Board.prototype.rotate(from);
+    to = vnc.Board.prototype.rotate(to);
+  }
   var c = parseInt(type[type.length-1]); // color: 0 for black, 1 for white
   var t = type.substring(0, type.length-1); // piece type: M, X, P etc
   var mid = vnc.Board.prototype.middle;

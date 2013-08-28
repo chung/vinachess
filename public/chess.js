@@ -14,7 +14,7 @@ window.onload = function() {
     var allUsers = document.getElementById("users");
     var chatElem = document.getElementById("chat");
     var boardElem = document.getElementById("board");
-    var board, user, last;
+    var board, user, last, rotation = vnc.Piece.BLACK;
     var socket = io.connect(document.URL);
 
     // handler for board click
@@ -32,7 +32,7 @@ window.onload = function() {
                 elem.className += ' selected';
                 last = {elem: elem, pos: pos, type: type};
             } else {
-                var move = vnc.Board.prototype.getMove.call(board, last.type, last.pos, pos);
+                var move = vnc.Board.prototype.getMove.call(board, last.type, last.pos, pos, rotation);
                 if (move) {
                     // remove the selected class for last selected elem
                     var klass = last.elem.className;
@@ -57,7 +57,7 @@ window.onload = function() {
     });
     socket.on('game', function (data) {
         board = data.board;
-        boardElem.innerHTML = data.html;
+        boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
         var color = board.turn ? 'RED' : 'BLACK';
         $('#turn').html(color).attr('class', color);
     });
@@ -78,5 +78,10 @@ window.onload = function() {
 
     $('#new').click(function() {
         socket.emit('new');
+    });
+
+    $('#rotate').click(function() {
+        rotation = vnc.Piece.WHITE - rotation;
+        boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
     });
 }
