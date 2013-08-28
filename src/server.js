@@ -343,6 +343,7 @@ vnc.Board.prototype.getMove = function(type, from, to, rotation) {
   return movable ? theMove : null;
 };
 
+// translate('c2', 1) to {x:7, y:7}
 vnc.Board.prototype.translate = function(pos, color) {
   var x = parseInt(pos[1]) - 1;
   var y = vnc.Piece.LETTER.indexOf(pos[0]);
@@ -353,6 +354,7 @@ vnc.Board.prototype.translate = function(pos, color) {
   return {x: x, y: y};
 };
 
+// return the middle point to calculate the blocking piece for M & T
 vnc.Board.prototype.middle = function(x1, x2) {
   var m = Math.floor((x1 + x2)/2);
   return (x1 > x2) ? (m + x1 + x2 - 2*m) : m;
