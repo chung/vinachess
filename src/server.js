@@ -16,7 +16,7 @@ vnc.Piece = {
     Tg: ['a5'], S: ['a4','a6'], T: ['a3','a7'], M: ['a2','a8'], X: ['a1','a9'],
     B: ['d1','d3','d5','d7','d9'], P: ['c2','c8']
   },
-  LETTER: 'abcdefghij'
+  LETTER: 'abcdefghij' // for Y axis
 };
 
 
@@ -56,7 +56,7 @@ vnc.Board = function() {
 
   this.newGame = function(white, black, turn) {
     this.white = vnc.copy(white || vnc.Piece.START);
-    this.black = vnc.copy(white || vnc.Piece.START);
+    this.black = vnc.copy(black || vnc.Piece.START);
     this.turn = turn === undefined ? vnc.Piece.WHITE : turn;
     this.lastMove = {};
     this.history = [];
