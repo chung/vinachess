@@ -52,6 +52,25 @@ describe("Chess board", function() {
     expect(b.black.X).toEqual(['b1', 'a9']);
   });
 
+  it("should correctly move pieces with before/after notation", function() {
+    b.newGame({B: ['d3', 'f3', 'g3', 'h3', 'i3']}, {B: ['d3', 'f3', 'g3', 'h3', 'i3']});
+    expect(b.getMove('B1', 'e7', 'e8')).toEqual('Btsss3-2');
+    expect(b.getMove('B1', 'g7', 'f7')).toEqual('Bssss3.1');
+    expect(b.getMove('B0', 'i3', 'j3')).toEqual('Btttt3.1');
+    expect(b.getMove('B0', 'h3', 'h4')).toEqual('Bttts3-4');
+    expect(b.getMove('B0', 'g3', 'g4')).toEqual('Bttss3-4');
+    expect(b.getMove('B0', 'f3', 'f4')).toEqual('Btsss3-4');
+    expect(b.getMove('B0', 'd3', 'e3')).toEqual('Bssss3.1');
+    b.move('Bttss3-2');
+    expect(b.white.B).toEqual(['d3', 'f3', 'g2', 'h3', 'i3']);
+    b.move('Bttts3-2');
+    expect(b.black.B).toEqual(['d3', 'f3', 'g3', 'h2', 'i3']);
+    b.move('Bt3.1'); // same as Btttt3.2
+    expect(b.white.B).toEqual(['d3', 'f3', 'g2', 'h3', 'j3']);
+    b.move('Bs3.1'); // same as Bssss3.1
+    expect(b.black.B).toEqual(['e3', 'f3', 'g3', 'h2', 'i3']);
+  });
+
   it("should correctly move the same piece for black & white", function() {
     b.move('P2-5');
     b.move('P2-5');

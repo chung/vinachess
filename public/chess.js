@@ -19,7 +19,6 @@ window.onload = function() {
     var url = document.URL;
     var index = url.indexOf('room=');
     var room = index < 0 ? 'public' : url.substring(index+5, url.length);
-    //alert(room);
 
     var socket = io.connect(url);
     socket.emit('join', { room: room });
