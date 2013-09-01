@@ -28,24 +28,23 @@ html, body {
 #chat {
     display: inline-block;
     width: 368px;
-    height: 300px;
+    height: 250px;
     padding: 10px;
     border: solid 1px #999;
     overflow-y: scroll;
     font-size: 11px;
 }
 #users {
-    height: 120px;
-    width: 390px;
     overflow-y: scroll;
-    font-size: 12px;
+    height: 120px;
+    font-size: 9px;
 }
 #turn {
-    font-size: 30px;
-    width: 120px;
+    font-size: 26px;
+    width: 110px;
     font-weight: bold;
-    margin-left: 24px;
-    margin-right: 45px;
+    margin-left: 0px;
+    margin-right: 0px;
     border: solid 0px green;
     display: inline-block;
     text-align: center;
@@ -54,11 +53,25 @@ html, body {
     width: 22px;
     height: 22px;
     vertical-align: bottom;
-    margin-left: 12px;
+    margin-left: 0px;
     margin-bottom: 2px;
 }
 #rotate:hover {
     cursor: pointer;
+}
+#tabs {
+    margin-top: 10px;
+    font-size: 10px;
+    height: 170px;
+    width: 390px;
+}
+#notefield {
+    width: 360px;
+    height: 100px;
+}
+#notestatus {
+    background-color: yellow;
+    display: none;
 }
 .RED {
     color: red;

@@ -4,6 +4,7 @@ $(document).ready(function() {
             sendMessage();
         }
     });
+    $( "#tabs" ).tabs();
 });
 
 
@@ -68,6 +69,10 @@ window.onload = function() {
         chatElem.innerHTML = data.message + '<br/>' + chatElem.innerHTML;
     });
 
+    socket.on('note', function (data) {
+        $('#notefield').val(data.note);
+    });
+
     socket.on('users', function (data) {
         var str = '', count = 0;
         for(var i = 0; i < data.users.length; i++) {
@@ -109,5 +114,19 @@ window.onload = function() {
     $('#rotate').click(function() {
         rotation = vnc.Piece.WHITE - rotation;
         boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
+    });
+
+    $('#room').click(function() {
+        var rand = Math.floor((Math.random()*1000)+1);
+        window.location = '/?room=P' + rand;
+    });
+
+    $('#addnote').click(function() {
+        socket.emit('addnote', { note: $('#notefield').val(), room: room });
+        $('#notestatus').slideDown(function() {
+            setTimeout(function() {
+                $('#notestatus').slideUp();
+            }, 5000);
+        });
     });
 }

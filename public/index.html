@@ -3,26 +3,40 @@
 <head>
   <title>VinaChess: the best place to play chess</title>
   <link rel="stylesheet" href="chess.css" />
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
   <script src="jquery.min.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="server.js"></script>
   <script src="chess.js"></script>
 </head>
 <body class="main">
 <div id="control">
+  <image id="rotate" src="images/rotate.png" title="Rotate Board">
   <input id="undo" type="button" value="<< Undo">
   <input id="redo" type="button" value="Redo >>">
   <span id="turn"></span>
   <input id="new" type="button" value="New Game">
-  <image id="rotate" src="images/rotate.png" title="Rotate Board">
+  <input id="room" type="button" value="New Room">
   <span id="status"></span>
 </div>
 <div>
   <div id="board"></div>
   <div id="content">
     <div id="welcome"></div>
-    <hr />
-    <div id="users"></div><br />
+    <div id="tabs">
+      <ul>
+        <li><a href="#users">Users</a></li>
+        <li><a href="#notearea">Notes</a></li>
+      </ul>
+      <div id="users"></div>
+      <div id="notearea">
+        <textarea id="notefield"></textarea>
+        <input id="addnote" type="button" value="Add Note">
+        <span id="notestatus">Note has been saved!</span>
+      </div>
+    </div>
+    <br />
     <input id="field">
     <input id="send" type="button" value="send">
     <div id="chat"></div>

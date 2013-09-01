@@ -52,6 +52,7 @@ io.sockets.on('connection', function (socket) {
         server.join(user.name, room);
         board = server.boards[room];
         socket.emit("board", board);
+        updateNote();
     });
     socket.on('disconnect', function() {
         removeUser(user);
@@ -66,6 +67,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('send', function(data) {
         try {
             vnc.Board.prototype.move.call(board, data.message);
+            updateNote();
             socket.broadcast.to(room).emit("board", board);
             client.index('vinachess', 'server', {boards: server.boards}, {id: 'latest', create: false}, function (err, res) {
                 if (err) console.log(err);
@@ -78,6 +80,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('undo', function() {
         try {
             io.sockets.in(room).emit("board", vnc.Board.prototype.undo.call(board));
+            updateNote();
         } catch (e) {
             handleException(e);
         }
@@ -85,6 +88,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('redo', function() {
         try {
             io.sockets.in(room).emit("board", vnc.Board.prototype.redo.call(board));
+            updateNote();
         } catch (e) {
             handleException(e);
         }
@@ -92,15 +96,29 @@ io.sockets.on('connection', function (socket) {
     socket.on('new', function() {
         try {
             io.sockets.in(room).emit("board", vnc.Board.prototype.newGame.call(board));
+            updateNote();
+        } catch (e) {
+            handleException(e);
+        }
+    });
+    socket.on('addnote', function(data) {
+        try {
+            client.index('note', room, data, {id: JSON.stringify(board.grid), create: false}, function (err, res) {
+                if (err) console.log(err);
+                else console.log(res);
+            });
         } catch (e) {
             handleException(e);
         }
     });
     var handleException = function(e) {
         console.log(e);
-        //socket.disconnect();
-        //updateUsers();
     };
+    var updateNote = function() {
+        client.get('note', JSON.stringify(board.grid), function (err, doc, res) {
+            io.sockets.in(room).emit('note', doc || { note: '' });
+        });
+    }
 });
 
 var users = [];
