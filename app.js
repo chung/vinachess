@@ -72,38 +72,35 @@ io.sockets.on('connection', function (socket) {
                 else console.log(res);
             });
         } catch (e) {
-            console.log(e);
-            socket.disconnect();
-            updateUsers();
+            handleException(e);
         }
     });
     socket.on('undo', function() {
         try {
             io.sockets.in(room).emit("board", vnc.Board.prototype.undo.call(board));
         } catch (e) {
-            console.log(e);
-            socket.disconnect();
-            updateUsers();
+            handleException(e);
         }
     });
     socket.on('redo', function() {
         try {
             io.sockets.in(room).emit("board", vnc.Board.prototype.redo.call(board));
         } catch (e) {
-            console.log(e);
-            socket.disconnect();
-            updateUsers();
+            handleException(e);
         }
     });
     socket.on('new', function() {
         try {
             io.sockets.in(room).emit("board", vnc.Board.prototype.newGame.call(board));
         } catch (e) {
-            console.log(e);
-            socket.disconnect();
-            updateUsers();
+            handleException(e);
         }
     });
+    var handleException = function(e) {
+        console.log(e);
+        //socket.disconnect();
+        //updateUsers();
+    };
 });
 
 var users = [];
