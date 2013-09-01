@@ -66,7 +66,10 @@ html, body {
 .BLACK {
     color: black;
 }
-
+#status {
+    margin-left: 12px;
+    color: red;
+}
 .piece {
     position: absolute;
     width: 44px;

@@ -14,7 +14,7 @@ window.onload = function() {
     var allUsers = document.getElementById("users");
     var chatElem = document.getElementById("chat");
     var boardElem = document.getElementById("board");
-    var board, user, last, rotation = vnc.Piece.BLACK;
+    var board, username, last, rotation = vnc.Piece.BLACK;
     var waitingForOther = false;
     var url = document.URL;
     var index = url.indexOf('room=');
@@ -46,7 +46,7 @@ window.onload = function() {
                     elem.className = elem.className.replace(type, '') + ' selected ' + last.type;
                     console.log(move);
                     board = vnc.Board.prototype.move.call(board, move); // move this board, then broadcast to others
-                    socket.emit('send', { message: move, username: user });
+                    socket.emit('send', { message: move, username: username });
                     last = null;
                     waitingForOther = true;
                 }
@@ -55,16 +55,29 @@ window.onload = function() {
     };
 
     socket.on('welcome', function (data) {
-        user = data.name;
+        username = data.name;
         welcome.innerHTML = "<strong>" + data.name + "</strong>: welcome to vinachess.net";
     });
+
+    socket.on('restart', function () {
+        $('#status').html("Server's restarted, refresh your browser now!");
+        setTimeout(function() { location.reload(true) }, 2000);
+     });
 
     socket.on('updateChat', function (data) {
         chatElem.innerHTML = data.message + '<br/>' + chatElem.innerHTML;
     });
 
     socket.on('users', function (data) {
-        allUsers.innerHTML = "<strong>There are " + data.count + " online users:</strong><br />" + data.users;
+        var str = '', count = 0;
+        for(var i = 0; i < data.users.length; i++) {
+            var user = data.users[i];
+            if (user.room) {
+                count += 1;
+                str += user.name + ' <small>(' + user.room + ')</small><br />';
+            }
+        }
+        allUsers.innerHTML = "<strong>There are " + count + " online users:</strong><br />" + str;
     });
 
     socket.on('board', function (data) {
@@ -77,7 +90,7 @@ window.onload = function() {
 
     sendButton.onclick = sendMessage = function() {
         var text = field.value;
-        socket.emit('chat', { message: text, username: user });
+        socket.emit('chat', { message: text, username: username });
         field.value = "";
     };
 

@@ -2,7 +2,20 @@ var fs = require('fs');
 var express = require('express');
 var app = express();
 var Moniker = require('moniker');
+var elastical = require('elastical');
+var vnc = require('./src/server.js');
 var port = process.env.PORT || 5000;
+var client = new elastical.Client('localhost');
+var server = new vnc.Server();
+
+// trying to restore the latest server
+client.get('vinachess', 'latest', function (err, doc, res) {
+    if (err) console.log(err);
+    else {
+        server = new vnc.Server(doc);
+        console.log('\n\n*** Server restored successfully from previous state ***\n\n');
+    }
+});
 
 app.use(express.static(__dirname + '/public'));
 app.get("/server.js", function(req, res){
@@ -23,10 +36,7 @@ io.configure(function () {
   io.set("polling duration", 10); 
 });
 
-
-var vnc = require('./src/server.js');
-var server = new vnc.Server();
-
+setTimeout(function() { io.sockets.emit('restart') }, 5000);
 
 // socket.io
 io.sockets.on('connection', function (socket) {
@@ -41,7 +51,7 @@ io.sockets.on('connection', function (socket) {
         updateUsers();
         server.join(user.name, room);
         board = server.boards[room];
-        io.sockets.in(room).emit("board", board);
+        socket.emit("board", board);
     });
     socket.on('disconnect', function() {
         removeUser(user);
@@ -54,17 +64,45 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.to(room).emit("updateChat", { message: m2 });
     });
     socket.on('send', function(data) {
-        board.move(data.message);
-        socket.broadcast.to(room).emit("board", board);
+        try {
+            vnc.Board.prototype.move.call(board, data.message);
+            socket.broadcast.to(room).emit("board", board);
+            client.index('vinachess', 'server', {boards: server.boards}, {id: 'latest', create: false}, function (err, res) {
+                if (err) console.log(err);
+                else console.log(res);
+            });
+        } catch (e) {
+            console.log(e);
+            socket.disconnect();
+            updateUsers();
+        }
     });
     socket.on('undo', function() {
-        io.sockets.in(room).emit("board", board.undo());
+        try {
+            io.sockets.in(room).emit("board", vnc.Board.prototype.undo.call(board));
+        } catch (e) {
+            console.log(e);
+            socket.disconnect();
+            updateUsers();
+        }
     });
     socket.on('redo', function() {
-        io.sockets.in(room).emit("board", board.redo());
+        try {
+            io.sockets.in(room).emit("board", vnc.Board.prototype.redo.call(board));
+        } catch (e) {
+            console.log(e);
+            socket.disconnect();
+            updateUsers();
+        }
     });
     socket.on('new', function() {
-        io.sockets.in(room).emit("board", board.newGame());
+        try {
+            io.sockets.in(room).emit("board", vnc.Board.prototype.newGame.call(board));
+        } catch (e) {
+            console.log(e);
+            socket.disconnect();
+            updateUsers();
+        }
     });
 });
 
@@ -89,12 +127,7 @@ var removeUser = function(user) {
     }
 }
 var updateUsers = function() {
-    var str = '';
-    for(var i=0; i<users.length; i++) {
-        var user = users[i];
-        str += user.name + ' <small>(' + user.room + ')</small><br />';
-    }
-    io.sockets.emit("users", { users: str, count: users.length });
+    io.sockets.emit("users", { users: users, count: users.length });
 }
 var findUser = function(username) {
     for(var i=0; i<users.length; i++) {

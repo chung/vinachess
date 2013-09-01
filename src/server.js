@@ -20,8 +20,10 @@ vnc.Piece = {
 };
 
 
-vnc.Server = function() {
-  this.boards = {};
+vnc.Server = function(restore) {
+  // only restore the boards
+  this.boards = restore ? restore.boards : {};
+  // always let users reconnect
   this.users = [];
 
   this.join = function(person, room) {
@@ -53,21 +55,21 @@ vnc.Server = function() {
 
 vnc.Board = function() {
   this.turn = 0;
+};
 
-  this.newGame = function(white, black, turn) {
-    this.white = vnc.copy(white || vnc.Piece.START);
-    this.black = vnc.copy(black || vnc.Piece.START);
-    this.turn = turn === undefined ? vnc.Piece.WHITE : turn;
-    this.lastMove = {};
-    this.history = [];
-    this.init();
-    this.index = 0;
-    this.history[this.index] = { move: null,
-                               white: vnc.copy(this.white),
-                               black: vnc.copy(this.black),
-                               grid:  vnc.copy(this.grid)};
-    return this;
- };
+vnc.Board.prototype.newGame = function(white, black, turn) {
+  this.white = vnc.copy(white || vnc.Piece.START);
+  this.black = vnc.copy(black || vnc.Piece.START);
+  this.turn = turn === undefined ? vnc.Piece.WHITE : turn;
+  this.lastMove = {};
+  this.history = [];
+  vnc.Board.prototype.init.call(this);
+  this.index = 0;
+  this.history[this.index] = { move: null,
+                             white: vnc.copy(this.white),
+                             black: vnc.copy(this.black),
+                             grid:  vnc.copy(this.grid)};
+  return this;
 };
 
 vnc.color = function(c) { return vnc.Piece.color[c] };
@@ -193,8 +195,8 @@ vnc.Board.prototype.init = function() {
   for (var i = 0; i < this.grid.length; i++) {
     this.grid[i] = new Array(vnc.Piece.X);
   }
-  this.updateAll(vnc.Piece.WHITE);
-  this.updateAll(vnc.Piece.BLACK);
+  vnc.Board.prototype.updateAll.call(this, vnc.Piece.WHITE);
+  vnc.Board.prototype.updateAll.call(this, vnc.Piece.BLACK);
 };
 
 vnc.Board.prototype.updateAll = function(color) {
@@ -202,10 +204,10 @@ vnc.Board.prototype.updateAll = function(color) {
   for (var p in pieces) {
     var pos = pieces[p];
     if (typeof(pos) === 'string') {
-      this.update(pos, p, color);
+      vnc.Board.prototype.update.call(this, pos, p, color);
     } else if (pos.length) {
       for (var k = 0; k < pos.length; k++) {
-        this.update(pos[k], p, color);
+        vnc.Board.prototype.update.call(this, pos[k], p, color);
       }
     }
   }
