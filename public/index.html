@@ -3,14 +3,16 @@
 <head>
   <title>VinaChess: the best place to play chess</title>
   <link rel="stylesheet" href="chess.css" />
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+  <link rel="stylesheet" href="jqueryui/jquery-ui.css" />
+  <link rel="stylesheet" href="clock/css/flipclock.css">
   <script src="jquery.min.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <script src="jqueryui/jquery-ui.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="server.js"></script>
   <script src="chess.js"></script>
 </head>
 <body class="main">
+<div id="clock1"></div>
 <div id="control">
   <image id="rotate" src="images/rotate.png" title="Rotate Board">
   <input id="undo" type="button" value="<< Undo">
@@ -42,5 +44,8 @@
     <div id="chat"></div>
   </div>
 </div>
+<div id="clock2"></div>
+<script src="clock/js/flipclock/libs/prefixfree.min.js"></script>
+<script src="clock/js/flipclock/flipclock.min.js"></script>
 </body>
 </html>

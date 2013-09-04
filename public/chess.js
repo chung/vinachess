@@ -49,11 +49,25 @@ window.onload = function() {
                     board = vnc.Board.prototype.move.call(board, move); // move this board, then broadcast to others
                     socket.emit('send', { message: move, username: username });
                     last = null;
+                    startClocks(board.turn);
                     waitingForOther = true;
                 }
             }
         }
     };
+    var startClocks = function(who) {
+        console.log('who turn: ' + who);
+        if (who === undefined) { // new game
+            clock1.setTime(0);
+            clock2.setTime(0);
+        } else if ((who + rotation) !== 1) {
+            clock1.start();
+            clock2.stop();
+        } else {
+            clock2.start();
+            clock1.stop();
+        }
+    }
 
     socket.on('welcome', function (data) {
         username = data.name;
@@ -91,6 +105,8 @@ window.onload = function() {
         boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
         var color = board.turn ? 'RED' : 'BLACK';
         $('#turn').html(color).attr('class', color);
+        if (board.history.length === 1) startClocks();
+        else startClocks(board.turn);
     });
 
     sendButton.onclick = sendMessage = function() {
@@ -108,12 +124,18 @@ window.onload = function() {
     });
 
     $('#new').click(function() {
+        startClocks();
         socket.emit('new');
     });
 
     $('#rotate').click(function() {
         rotation = vnc.Piece.WHITE - rotation;
         boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
+        // swap clocks:
+        var time2 = clock2.getTime().time;
+        clock2.setTime(clock1.getTime().time);
+        clock1.setTime(time2);
+        startClocks(board.turn);
     });
 
     $('#room').click(function() {
@@ -128,5 +150,11 @@ window.onload = function() {
                 $('#notestatus').slideUp();
             }, 5000);
         });
+    });
+    var clock1 = $('#clock1').FlipClock({
+        autoStart: false
+    });
+    var clock2 = $('#clock2').FlipClock({
+        autoStart: false
     });
 }

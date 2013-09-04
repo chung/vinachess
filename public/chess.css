@@ -73,6 +73,16 @@ html, body {
     background-color: yellow;
     display: none;
 }
+#clock1 {
+    height: 100px;
+    margin-bottom: 0px;
+    margin-left: 5px;
+}
+#clock2 {
+    height: 100px;
+    margin-top: 15px;
+    margin-left: 5px;
+}
 .RED {
     color: red;
 }
