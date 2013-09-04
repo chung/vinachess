@@ -56,10 +56,10 @@ window.onload = function() {
         }
     };
     var startClocks = function(who) {
-        console.log('who turn: ' + who);
+        //console.log('who turn: ' + who);
         if (who === undefined) { // new game
-            clock1.setTime(0);
-            clock2.setTime(0);
+            clock1.stop(); clock1.setTime(0);
+            clock2.stop(); clock2.setTime(0);
         } else if ((who + rotation) !== 1) {
             clock1.start();
             clock2.stop();
@@ -124,7 +124,6 @@ window.onload = function() {
     });
 
     $('#new').click(function() {
-        startClocks();
         socket.emit('new');
     });
 
