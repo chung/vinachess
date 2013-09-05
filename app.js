@@ -116,7 +116,13 @@ io.sockets.on('connection', function (socket) {
     };
     var updateNote = function() {
         client.get('note', JSON.stringify(board.grid), function (err, doc, res) {
-            io.sockets.in(room).emit('note', doc || { note: '' });
+            if (doc) {
+                io.sockets.in(room).emit('note', doc);
+            } else {
+                client.get('note', JSON.stringify(vnc.mirror(board.grid)), function (err2, doc2, res2) {
+                    io.sockets.in(room).emit('note', doc2 || {note : ''});
+                });
+            }
         });
     }
 });

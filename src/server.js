@@ -7,6 +7,14 @@ vnc.rotate = function(pos) {
   var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(pos[0]);
   return vnc.Piece.LETTER[y] + x;
 }
+// mirror(grid)
+vnc.mirror = function(grid) {
+  var mgrid = new Array(vnc.Piece.Y);
+  for (var i = 0; i < mgrid.length; i++) {
+    mgrid[i] = [grid[i][8],grid[i][7],grid[i][6],grid[i][5],grid[i][4],grid[i][3],grid[i][2],grid[i][1],grid[i][0]];
+  }
+  return mgrid;
+}
 
 vnc.Piece = {
   X: 9, Y: 10,
@@ -218,7 +226,7 @@ vnc.Board.prototype.updateAll = function(color) {
 // update('c2', 'P', BLACK) should set grid[2][1] = 'P0'
 vnc.Board.prototype.update = function(pos, type, color) {
   var p = vnc.Board.prototype.translate(pos, color);
-  this.grid[p.y][p.x] = type ? (type + color) : '';
+  this.grid[p.y][p.x] = type ? (type + color) : null;
 };
 
 vnc.Board.prototype.toHtml = function(color) {
