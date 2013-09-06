@@ -47,6 +47,7 @@ window.onload = function() {
                     elem.className = elem.className.replace(type, '') + ' selected ' + last.type;
                     console.log(move);
                     board = vnc.Board.prototype.move.call(board, move); // move this board, then broadcast to others
+                    showMoves();
                     socket.emit('send', { message: move, username: username });
                     last = null;
                     startClocks(board.turn);
@@ -55,8 +56,16 @@ window.onload = function() {
             }
         }
     };
+    selectMove = function(idx) {
+        socket.emit('select', idx);
+    };
+    var showMoves = function() {
+        $('#moves').html(vnc.Board.prototype.getMoves.call(board));
+        var sch = Math.floor((board.index+1)/2) * 1.2 * $('#moves')[0].scrollHeight / board.history.length;
+        $('#moves').stop().animate({scrollTop: sch}, 1000);
+
+    };
     var startClocks = function(who) {
-        //console.log('who turn: ' + who);
         if (who === undefined) { // new game
             clock1.stop(); clock1.setTime(0);
             clock2.stop(); clock2.setTime(0);
@@ -71,7 +80,7 @@ window.onload = function() {
 
     socket.on('welcome', function (data) {
         username = data.name;
-        welcome.innerHTML = "<strong>" + data.name + "</strong>: welcome to vinachess.net";
+        welcome.innerHTML = "<strong>" + data.name + "</strong>: welcome to " + room + "@vinachess.net";
     });
 
     socket.on('restart', function () {
@@ -103,6 +112,7 @@ window.onload = function() {
         board = data;
         waitingForOther = false;
         boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
+        showMoves();
         var color = board.turn ? 'RED' : 'BLACK';
         $('#turn').html(color).attr('class', color);
         if (board.history.length === 1) startClocks();

@@ -1,43 +1,64 @@
 html, body {
     margin: 0;
-    padding: 20px;
+    padding: 5px;
     font-family: Tahoma;
     font-size: 16px;
 }
 #control {
     margin-bottom: 10px;
 }
+#playarea {
+    height: 521px;
+    min-width: 940px;
+    border: solid 0px red;
+}
 #board {
     position: relative;
+    float: left;
     overflow: hidden;
     width: 468px;
     height: 521px;
     background: url("images/board.gif");
+    margin-top: 0px;
     display: inline-block;
 }
 #content {
+    position: relative;
     display: inline-block;
-    width: 400px;
+    margin-top: 0px;
+    width: 430px;
     height: 521px;
-    margin-left: 30px;
+    margin-left: 20px;
+    border: solid 0px green;
 }
 #field {
     width: 335px;
+    height: 18px;
     border: solid 1px black;    
 }
 #chat {
     display: inline-block;
-    width: 368px;
-    height: 250px;
+    width: 370px;
+    height: 390px;
     padding: 10px;
     border: solid 1px #999;
     overflow-y: scroll;
     font-size: 11px;
 }
+#moves {
+    overflow-y: scroll;
+    height: 435px;
+}
 #users {
     overflow-y: scroll;
-    height: 120px;
     font-size: 9px;
+    height: 435px;
+}
+#notes {
+    height: 400px;
+}
+#chats {
+    height: 400px;
 }
 #turn {
     font-size: 26px;
@@ -62,12 +83,11 @@ html, body {
 #tabs {
     margin-top: 10px;
     font-size: 10px;
-    height: 170px;
-    width: 390px;
+    height: 485px;
 }
 #notefield {
-    width: 360px;
-    height: 100px;
+    width: 390px;
+    height: 410px;
 }
 #notestatus {
     background-color: yellow;
@@ -80,8 +100,11 @@ html, body {
 }
 #clock2 {
     height: 100px;
-    margin-top: 15px;
+    margin-top: 5px;
     margin-left: 5px;
+}
+.flip-clock-label {
+    display: none;
 }
 .RED {
     color: red;
@@ -102,8 +125,16 @@ html, body {
 .piece:hover {
     border: 1px solid green;
 }
+.move:hover {
+    cursor: pointer;
+    background-color: yellow;
+}
+.movenumber {
+    text-align: right;
+}
 .selected {
     border: 1px solid green;
+    background-color: yellow;
 }
 .from {
     border: 1px solid gray;

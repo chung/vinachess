@@ -44,9 +44,12 @@ describe("Chess board", function() {
   });
 
   it("should correctly move pieces", function() {
+    b.move('Tg5.1'); b.move('Tg5.1');
     b.move('P2-5'); b.move('M2.3');
     b.move('P8.2'); b.move('X1.1');
     b.move('P5/1'); b.move('M3/5');
+    expect(b.white.Tg).toEqual(['b5']);
+    expect(b.black.Tg).toEqual(['b5']);
     expect(b.white.P).toEqual(['b5', 'e8']);
     expect(b.black.M).toEqual(['a8', 'b5']);
     expect(b.black.X).toEqual(['b1', 'a9']);
@@ -96,20 +99,20 @@ describe("Chess board", function() {
     expect(b.getMove('P1', 'h8', 'h7')).toEqual('P2-3');
     expect(b.getMove('P1', 'h2', 'a2')).toEqual('P8.7');
     expect(b.getMove('P0', 'c2', 'c7')).toEqual('P2-7');
-    expect(b.getMove('P0', 'c2', 'd5')).toEqual(null); // illegal move
-    expect(b.getMove('P0', 'c2', 'a2')).toEqual(null); // illegal move
+    expect(b.getMove('P0', 'c2', 'd5')).toBeNull(); // illegal move
+    expect(b.getMove('P0', 'c2', 'a2')).toBeNull(); // illegal move
     expect(b.getMove('B1', 'g9', 'f9')).toEqual('B1.1');
     expect(b.getMove('B0', 'd3', 'e3')).toEqual('B3.1');
-    expect(b.getMove('B0', 'd5', 'c5')).toEqual(null); // illegal move
+    expect(b.getMove('B0', 'd5', 'c5')).toBeNull(); // illegal move
     expect(b.getMove('Tg1', 'j5', 'i5')).toEqual('Tg5.1');
-    expect(b.getMove('Tg1', 'j5', 'j6')).toEqual(null);
+    expect(b.getMove('Tg1', 'j5', 'j6')).toBeNull();
     expect(b.getMove('Tg0', 'a5', 'b5')).toEqual('Tg5.1');
-    expect(b.getMove('Tg0', 'a5', 'b6')).toEqual(null);
+    expect(b.getMove('Tg0', 'a5', 'b6')).toBeNull();
     expect(b.getMove('S0', 'a4', 'b5')).toEqual('S4.5');
     expect(b.getMove('S1', 'j4', 'i5')).toEqual('S6.5');
-    expect(b.getMove('S0', 'a4', 'b4')).toEqual(null);
+    expect(b.getMove('S0', 'a4', 'b4')).toBeNull();
     expect(b.getMove('M1', 'j8', 'h9')).toEqual('M2.1');
-    expect(b.getMove('M1', 'j8', 'i6')).toEqual(null);
+    expect(b.getMove('M1', 'j8', 'i6')).toBeNull();
     expect(b.getMove('M0', 'a2', 'c3')).toEqual('M2.3');
     expect(b.getMove('X1', 'j9', 'h9')).toEqual('X1.2');
   });
@@ -117,7 +120,7 @@ describe("Chess board", function() {
   it("should be able to undo", function() {
     expect(b.grid[7][7]).toEqual('P1');
     b.move('P2-5');
-    expect(b.grid[7][7]).toEqual('');
+    expect(b.grid[7][7]).toBeNull();
     expect(b.turn).toEqual(vnc.Piece.BLACK);
     b.undo();
     expect(b.turn).toEqual(vnc.Piece.WHITE);
@@ -141,20 +144,20 @@ describe("Chess board", function() {
     expect(b.grid[7][7]).toEqual('P1');
     b.redo();
     expect(b.turn).toEqual(vnc.Piece.BLACK);
-    expect(b.grid[7][7]).toEqual('');
+    expect(b.grid[7][7]).toBeNull();
     expect(b.grid[7][4]).toEqual('P1');
   });
 
   it("should be able to clear the undo history after making new move", function() {
     b.move('P2-5');
     b.move('P8-5');
-    expect(b.grid[2][7]).toEqual('');
+    expect(b.grid[2][7]).toBeNull();
     b.undo();
     expect(b.turn).toEqual(vnc.Piece.BLACK);
     expect(b.grid[2][7]).toEqual('P0');
     b.redo();
     expect(b.turn).toEqual(vnc.Piece.WHITE);
-    expect(b.grid[2][7]).toEqual('');
+    expect(b.grid[2][7]).toBeNull();
     expect(b.grid[2][4]).toEqual('P0');
     b.undo();
     b.undo(); // back to start
@@ -168,5 +171,21 @@ describe("Chess board", function() {
     expect(b.grid[7][6]).toEqual('M1');
     expect(b.grid[2][7]).toEqual('P0');
     expect(b.grid[7][7]).toEqual('P1');
+  });
+});
+
+
+describe("vnc.neutralize", function() {
+  it("should neutralize simple moves correctly", function() {
+    expect(vnc.neutralize('P2-5')).toEqual('P8-5');
+    expect(vnc.neutralize('S4.5')).toEqual('S6.5');
+    expect(vnc.neutralize('T7/9')).toEqual('T3/1');
+    expect(vnc.neutralize('M4.5')).toEqual('M6.5');
+    expect(vnc.neutralize('X1-2')).toEqual('X9-8');
+  });
+
+  it("should neutralize complex moves correctly", function() {
+    expect(vnc.neutralize('1. T3.5 S4.5')).toEqual('1. T7.5 S6.5');
+    expect(vnc.neutralize('1. P2-5 M8.7\n2. M2.3 M2.3')).toEqual('1. P8-5 M2.3\n2. M8.7 M8.7');
   });
 });

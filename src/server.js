@@ -16,6 +16,24 @@ vnc.mirror = function(grid) {
   return mgrid;
 }
 
+vnc.MOVE_REGEX = /([X|P|M|S|T|B][t|g|s]*)(\d)([\.|\-|\/])(\d)/gm;
+
+// neutralize a note so it makes sense for mirror board
+// it looks for move specific string such as P2-5 and
+// replaces with mirror position such as P8-5
+vnc.neutralize = function(note) {
+  if (!note) return '';
+  return note.replace(vnc.MOVE_REGEX, function(m, p1, p2, p3, p4) {
+    var type = p1.replace(/t|s/g, '');
+    var specialPieces = (type === 'M' || type === 'S' || type === 'T');
+    if (!specialPieces && p3 !== '-') {
+      return p1 + (vnc.Piece.X+1-p2) + p3 + p4;
+    } else {
+      return p1 + (vnc.Piece.X+1-p2) + p3 + (vnc.Piece.X+1-p4);
+    }
+  });
+}
+
 vnc.Piece = {
   X: 9, Y: 10,
   color: ['black', 'white'],
@@ -85,9 +103,8 @@ vnc.Board.prototype.color = function(c) { return vnc.color(c || this.turn); };
 
 // parse('P2-5') = {from: 'c2', to: 'c5', type: 'P'}
 vnc.parse = function(board, move, color) {
-  var re = /(\w+)(\d)([\.|\-|\/])(\d)/;
-  var ma = move.match(re);
-  var type = ma[1].replace(/[s|t]/g, ''), x1 = +ma[2], op = ma[3], x2 = +ma[4];
+  var ma = move.match(vnc.MOVE_REGEX.source);
+  var type = ma[1].replace(/t|s/g, ''), x1 = +ma[2], op = ma[3], x2 = +ma[4];
   var locs = board[vnc.color(color)][type].sort(); // locations of pieces sorted
   var inc = 1, start = 0, skip = 0, idx;
   if (move.indexOf('t') >= 0) {
@@ -163,28 +180,32 @@ vnc.Board.prototype.move = function(m) {
 
 vnc.Board.prototype.undo = function() {
   if (this.index > 0) {
-    this.index -= 1;
-    var hist = this.history[this.index];
-    this.grid = vnc.copy(hist.grid);
-    this.white = vnc.copy(hist.white);
-    this.black = vnc.copy(hist.black);
-    this.turn = vnc.Piece.WHITE - this.turn;
-    this.lastMove = {}; // FIXME: get appropriate last move
+    return vnc.Board.prototype.select.call(this, this.index-1);
   }
   return this;
 };
 
 vnc.Board.prototype.redo = function() {
   if (this.index < this.history.length-1) {
-    this.index += 1;
+    return vnc.Board.prototype.select.call(this, this.index+1);
+  }
+  return this;
+};
+
+// select a random move
+vnc.Board.prototype.select = function(idx) {
+  if (idx < this.history.length && idx >= 0) {
+    if (Math.abs(this.index-idx) % 2) this.turn = vnc.Piece.WHITE - this.turn;
+    this.index = idx;
     var hist = this.history[this.index];
     this.grid  = vnc.copy(hist.grid);
     this.white = vnc.copy(hist.white);
     this.black = vnc.copy(hist.black);
-    this.turn = vnc.Piece.WHITE - this.turn;
+    this.lastMove = {}; // FIXME: get appropriate last move
   }
   return this;
 };
+
 
 // find a piece at this position for the color pieces
 // if no color specified, use the current color of the board (turn)
@@ -251,6 +272,18 @@ vnc.Board.prototype.toHtml = function(color) {
       //console.log('.' + absPos + ' { left: ' + (8 + 51*x)+ 'px; top: ' + (8 + 50.5*y) + 'px; }');
     }
     html += '\n';
+  }
+  return html;
+};
+
+vnc.Board.prototype.getMoves = function() {
+  var html = '<table border="0" cellpadding="5"><tr><th>#</th><th>Red</th><th>Black</th></tr>';
+  var moveSpan = function(board, idx) {
+    if (!board.history[idx]) return '';
+    return '<td onclick="selectMove(' + idx + ');" class="move' + (idx == board.index ? ' selected">' : '">') + board.history[idx].move + '</td>';
+  };
+  for (var i = 1; i < this.history.length; i += 2) {
+    html += '<tr><td class="movenumber">' + (i+1)/2 + '.</td>' + moveSpan(this, i) + moveSpan(this, i+1) + '</tr>';
   }
   return html;
 };

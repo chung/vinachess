@@ -17,26 +17,30 @@
   <input id="room" type="button" value="New Room">
   <span id="status"></span>
 </div>
-<div>
+<div id="playarea">
   <div id="board"></div>
   <div id="content">
     <div id="welcome"></div>
     <div id="tabs">
       <ul>
+        <li><a href="#moves">Moves</a></li>
+        <li><a href="#notes">Notes</a></li>
         <li><a href="#users">Users</a></li>
-        <li><a href="#notearea">Notes</a></li>
+        <li><a href="#chats">Chats</a></li>
       </ul>
-      <div id="users"></div>
-      <div id="notearea">
+      <div id="moves"></div>
+      <div id="notes">
         <textarea id="notefield"></textarea>
         <input id="addnote" type="button" value="Add Note">
         <span id="notestatus">Note has been saved!</span>
       </div>
+      <div id="users"></div>
+      <div id="chats">
+        <input id="field">
+        <input id="send" type="button" value="send">
+        <div id="chat"></div>
+      </div>
     </div>
-    <br />
-    <input id="field">
-    <input id="send" type="button" value="send">
-    <div id="chat"></div>
   </div>
 </div>
 <div id="clock2"></div>

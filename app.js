@@ -101,6 +101,14 @@ io.sockets.on('connection', function (socket) {
             handleException(e);
         }
     });
+    socket.on('select', function(idx) {
+        try {
+            io.sockets.in(room).emit("board", vnc.Board.prototype.select.call(board, idx));
+            updateNote();
+        } catch (e) {
+            handleException(e);
+        }
+    });
     socket.on('addnote', function(data) {
         try {
             client.index('note', room, data, {id: JSON.stringify(board.grid), create: false}, function (err, res) {
@@ -120,7 +128,9 @@ io.sockets.on('connection', function (socket) {
                 io.sockets.in(room).emit('note', doc);
             } else {
                 client.get('note', JSON.stringify(vnc.mirror(board.grid)), function (err2, doc2, res2) {
-                    io.sockets.in(room).emit('note', doc2 || {note : ''});
+                    doc = {note: ''};
+                    if (doc2) doc = {note: vnc.neutralize(doc2.note)};
+                    io.sockets.in(room).emit('note', doc);
                 });
             }
         });
