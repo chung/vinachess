@@ -109,6 +109,14 @@ io.sockets.on('connection', function (socket) {
             handleException(e);
         }
     });
+    socket.on('loadgame', function(data) {
+        try {
+            io.sockets.in(room).emit("board", vnc.Board.prototype.loadGame.call(board, data.note));
+            updateNote();
+        } catch (e) {
+            handleException(e);
+        }
+    });
     socket.on('addnote', function(data) {
         try {
             client.index('note', room, data, {id: JSON.stringify(board.grid), create: false}, function (err, res) {

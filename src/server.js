@@ -98,6 +98,16 @@ vnc.Board.prototype.newGame = function(white, black, turn) {
   return this;
 };
 
+vnc.Board.prototype.loadGame = function(data) {
+  if (this.history.length > 1) return this; // only load at new game
+  var b = this; // need this closure below
+  data.replace(vnc.MOVE_REGEX, function(m) {
+    console.log(m);
+    vnc.Board.prototype.move.call(b, m);
+  });
+  return this;
+};
+
 vnc.color = function(c) { return vnc.Piece.color[c] };
 vnc.Board.prototype.color = function(c) { return vnc.color(c || this.turn); };
 

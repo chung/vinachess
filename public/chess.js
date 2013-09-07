@@ -61,7 +61,7 @@ window.onload = function() {
     };
     var showMoves = function() {
         $('#moves').html(vnc.Board.prototype.getMoves.call(board));
-        var sch = Math.floor((board.index+1)/2) * 1.2 * $('#moves')[0].scrollHeight / board.history.length;
+        var sch = Math.floor((board.index+1)/2) * 1.8 * $('#moves')[0].scrollHeight / board.history.length;
         $('#moves').stop().animate({scrollTop: sch}, 1000);
 
     };
@@ -115,8 +115,13 @@ window.onload = function() {
         showMoves();
         var color = board.turn ? 'RED' : 'BLACK';
         $('#turn').html(color).attr('class', color);
-        if (board.history.length === 1) startClocks();
-        else startClocks(board.turn);
+        if (board.history.length === 1) {
+            startClocks();
+            $('#loadgame').show();
+        } else {
+            $('#loadgame').hide();
+            startClocks(board.turn);
+        }
     });
 
     sendButton.onclick = sendMessage = function() {
@@ -157,6 +162,14 @@ window.onload = function() {
         $('#notestatus').slideDown(function() {
             setTimeout(function() {
                 $('#notestatus').slideUp();
+            }, 5000);
+        });
+    });
+    $('#loadgame').click(function() {
+        socket.emit('loadgame', { note: $('#notefield').val(), room: room });
+        $('#loadstatus').slideDown(function() {
+            setTimeout(function() {
+                $('#loadstatus').slideUp();
             }, 5000);
         });
     });

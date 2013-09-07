@@ -93,6 +93,10 @@ html, body {
     background-color: yellow;
     display: none;
 }
+#loadstatus {
+    background-color: yellow;
+    display: none;
+}
 #clock1 {
     height: 100px;
     margin-bottom: 0px;
