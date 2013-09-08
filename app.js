@@ -66,9 +66,8 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on('send', function(data) {
         try {
-            vnc.Board.prototype.move.call(board, data.message);
+            io.sockets.in(room).emit("board", vnc.Board.prototype.move.call(board, data.message));
             updateNote();
-            socket.broadcast.to(room).emit("board", board);
             client.index('vinachess', 'server', {boards: server.boards}, {id: 'latest', create: false}, function (err, res) {
                 if (err) console.log(err);
                 else console.log(res);
@@ -101,9 +100,9 @@ io.sockets.on('connection', function (socket) {
             handleException(e);
         }
     });
-    socket.on('select', function(idx) {
+    socket.on('select', function(data) {
         try {
-            io.sockets.in(room).emit("board", vnc.Board.prototype.select.call(board, idx));
+            io.sockets.in(room).emit("board", vnc.Board.prototype.select.call(board, data.index, data.path));
             updateNote();
         } catch (e) {
             handleException(e);

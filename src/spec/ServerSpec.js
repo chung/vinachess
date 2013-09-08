@@ -37,6 +37,8 @@ describe("Chess board", function() {
 
   it("should have been initialized correctly when start new game", function() {
     expect(b).started();
+    expect(b.paths.length).toEqual(1);
+    expect(b.paths[0].length).toEqual(1);
   });
 
   it("should allow white to move first", function() {
@@ -53,6 +55,35 @@ describe("Chess board", function() {
     expect(b.white.P).toEqual(['b5', 'e8']);
     expect(b.black.M).toEqual(['a8', 'b5']);
     expect(b.black.X).toEqual(['b1', 'a9']);
+  });
+
+  it("should be able to create new path", function() {
+    b.move('P2-5'); b.move('M2.3');
+    b.move('P8.2'); b.move('X1.1');
+    b.move('Tg5.1'); b.move('Tg5.1');
+    b.undo(); b.undo();
+    b.move('P5/1');
+    expect(b.paths.length).toEqual(2);
+    expect(b.path).toEqual(0); // this.path remain at 0
+    expect(b.paths[0].length).toEqual(6); // main line
+    expect(b.paths[1].length).toEqual(7); // old line
+  });
+
+  it("should be able to switch path", function() {
+    b.move('P2-5'); b.move('M2.3');
+    b.move('P8.2'); b.move('X1.1');
+    b.move('Tg5.1'); b.move('Tg5.1');
+    b.undo(); b.undo();
+    b.move('P5/1');
+    expect(b.paths.length).toEqual(2);
+    expect(b.paths[0].length).toEqual(6); // main line
+    expect(b.paths[1].length).toEqual(7); // old line
+    expect(b.white.Tg).toEqual(['a5']);
+    expect(b.black.Tg).toEqual(['a5']);
+    b.select(6, 1);
+    expect(b.path).toEqual(1);
+    expect(b.white.Tg).toEqual(['b5']);
+    expect(b.black.Tg).toEqual(['b5']);
   });
 
   it("should correctly move pieces with before/after notation", function() {

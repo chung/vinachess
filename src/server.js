@@ -89,9 +89,12 @@ vnc.Board.prototype.newGame = function(white, black, turn) {
   this.turn = turn === undefined ? vnc.Piece.WHITE : turn;
   this.lastMove = {};
   this.history = [];
+  this.paths = [];
+  this.path = 0;
+  this.paths.push(this.history);
   vnc.Board.prototype.init.call(this);
   this.index = 0;
-  this.history[this.index] = { move: null,
+  this.history[this.index] = { move: '',
                              white: vnc.copy(this.white),
                              black: vnc.copy(this.black),
                              grid:  vnc.copy(this.grid)};
@@ -179,31 +182,38 @@ vnc.Board.prototype.move = function(m) {
     this[vnc.color(this.turn)][p.type].splice(p.index, 1);
   }
   this.index += 1;
+  // check if just created a new path:
+  if (this.index < this.history.length && m != this.history[this.index].move) {
+    this.paths.push(vnc.copy(this.history));
+    this.history.splice(this.index, this.history.length - this.index);
+  }
   this.history[this.index] = { move: m,
                                white: vnc.copy(this.white),
                                black: vnc.copy(this.black),
                                grid:  vnc.copy(this.grid)};
-  // clear all the extra history: once move, cannot redo previous undos
-  this.history.splice(this.index + 1, this.history.length - this.index - 1);
   return this;
 };
 
 vnc.Board.prototype.undo = function() {
   if (this.index > 0) {
-    return vnc.Board.prototype.select.call(this, this.index-1);
+    return vnc.Board.prototype.select.call(this, this.index-1, this.path);
   }
   return this;
 };
 
 vnc.Board.prototype.redo = function() {
   if (this.index < this.history.length-1) {
-    return vnc.Board.prototype.select.call(this, this.index+1);
+    return vnc.Board.prototype.select.call(this, this.index+1, this.path);
   }
   return this;
 };
 
-// select a random move
-vnc.Board.prototype.select = function(idx) {
+// select a random move at index of path
+vnc.Board.prototype.select = function(idx, path) {
+  // first switch to the correct path
+  if (path !== undefined) this.path = path;
+  this.history = this.paths[this.path];
+  // then locate the correct move
   if (idx < this.history.length && idx >= 0) {
     if (Math.abs(this.index-idx) % 2) this.turn = vnc.Piece.WHITE - this.turn;
     this.index = idx;
@@ -286,16 +296,46 @@ vnc.Board.prototype.toHtml = function(color) {
   return html;
 };
 
+vnc.max = function(a) { return Math.max.apply(null, a.map(function(p) { return p.length })); };
+
 vnc.Board.prototype.getMoves = function() {
-  var html = '<table border="0" cellpadding="5"><tr><th>#</th><th>Red</th><th>Black</th></tr>';
-  var moveSpan = function(board, idx) {
-    if (!board.history[idx]) return '';
-    return '<td onclick="selectMove(' + idx + ');" class="move' + (idx == board.index ? ' selected">' : '">') + board.history[idx].move + '</td>';
+  var html = '<table border="0" cellpadding="2"><tr><th>#</th>';
+  var nmax = vnc.max(this.paths);
+  var moves = new Array(nmax), move;
+  var td;
+  var moveSpan = function(board, idx, pid) {
+    if (!board.paths[pid][idx]) return '<td></td>';
+    move = board.paths[pid][idx].move;
+    td = '<td onclick="selectMove(' + idx + ',' + pid + ');" class="move';
+    if (move === moves[idx]) td += ' moved';
+    moves[idx] = move;
+    if (pid === board.path) {
+      td += ' curpath';
+      if (idx === board.index) td += ' selected';
+    }
+    td += '">' + move + '</td>';
+    return td;
   };
-  for (var i = 1; i < this.history.length; i += 2) {
-    html += '<tr><td class="movenumber">' + (i+1)/2 + '.</td>' + moveSpan(this, i) + moveSpan(this, i+1) + '</tr>';
+  this.paths.forEach(function(p) { html += '<th>WHITE</th><th>BLACK</th>'; });
+  html += '</tr>';
+  // trying to sort paths
+  var pathsMap = {};
+  this.paths.forEach(function(path, index) {
+    var allMoves = '';
+    path.forEach(function(m) { allMoves += m.move });
+    pathsMap[allMoves] = index;
+  });
+  var sortedPaths = Object.keys(pathsMap).sort();
+  for (var i = 1; i < nmax; i += 2) {
+    html += '<tr>';
+    for (var j = 0; j < sortedPaths.length; j++) {
+      var p = pathsMap[sortedPaths[j]];
+      if (j === 0) html += '<td class="movenumber">' + (i+1)/2 + '.</td>';
+      html += moveSpan(this, i, p) + moveSpan(this, i+1, p);
+    }
+    html += '</tr>';
   }
-  return html;
+  return html + '</table>';
 };
 
 // getMove(P1, h8, h7) = 'P2-3'

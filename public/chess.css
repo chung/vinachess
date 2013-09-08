@@ -4,6 +4,9 @@ html, body {
     font-family: Tahoma;
     font-size: 16px;
 }
+.main {
+    background-color: #F6F4F0;
+}
 #control {
     margin-bottom: 10px;
 }
@@ -110,8 +113,8 @@ html, body {
 .flip-clock-label {
     display: none;
 }
-.RED {
-    color: red;
+.WHITE {
+    color: black;
 }
 .BLACK {
     color: black;
@@ -128,6 +131,16 @@ html, body {
 }
 .piece:hover {
     border: 1px solid green;
+}
+.curpath {
+    background-color: #F6F4F0;
+}
+.move {
+    font-weight: bold;
+}
+.moved {
+    font-weight: normal;
+    color: gray;
 }
 .move:hover {
     cursor: pointer;

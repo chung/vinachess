@@ -56,12 +56,12 @@ window.onload = function() {
             }
         }
     };
-    selectMove = function(idx) {
-        socket.emit('select', idx);
+    selectMove = function(idx, pid) {
+        socket.emit('select', { index: idx, path: pid });
     };
     var showMoves = function() {
         $('#moves').html(vnc.Board.prototype.getMoves.call(board));
-        var sch = Math.floor((board.index+1)/2) * 1.8 * $('#moves')[0].scrollHeight / board.history.length;
+        var sch = Math.floor((board.index+1)/2) * 1.8 * $('#moves')[0].scrollHeight / vnc.max(board.paths);
         $('#moves').stop().animate({scrollTop: sch}, 1000);
 
     };
@@ -113,7 +113,7 @@ window.onload = function() {
         waitingForOther = false;
         boardElem.innerHTML = vnc.Board.prototype.toHtml.call(board, rotation);
         showMoves();
-        var color = board.turn ? 'RED' : 'BLACK';
+        var color = board.turn ? 'WHITE' : 'BLACK';
         $('#turn').html(color).attr('class', color);
         if (board.history.length === 1) {
             startClocks();
