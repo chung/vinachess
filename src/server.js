@@ -320,17 +320,20 @@ vnc.Board.prototype.getMoves = function() {
   html += '</tr>';
   // trying to sort paths
   var pathsMap = {};
-  this.paths.forEach(function(path, index) {
+  this.paths.forEach(function(path, idx) {
     var allMoves = '';
     path.forEach(function(m) { allMoves += m.move });
-    pathsMap[allMoves] = index;
+    pathsMap[allMoves] = idx;
   });
   var sortedPaths = Object.keys(pathsMap).sort();
+  var curRow = Math.floor((this.index+1)/2);
   for (var i = 1; i < nmax; i += 2) {
     html += '<tr>';
+    var row = (i+1)/2;
+    var rowClass = curRow === row ? ' curpath' : '';
     for (var j = 0; j < sortedPaths.length; j++) {
       var p = pathsMap[sortedPaths[j]];
-      if (j === 0) html += '<td class="movenumber">' + (i+1)/2 + '.</td>';
+      if (j === 0) html += '<td class="movenumber' + rowClass + '">' + row + '</td>';
       html += moveSpan(this, i, p) + moveSpan(this, i+1, p);
     }
     html += '</tr>';

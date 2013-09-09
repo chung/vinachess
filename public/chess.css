@@ -133,7 +133,7 @@ html, body {
     border: 1px solid green;
 }
 .curpath {
-    background-color: #F6F4F0;
+    background-color: lightgray;
 }
 .move {
     font-weight: bold;
@@ -148,6 +148,8 @@ html, body {
 }
 .movenumber {
     text-align: right;
+    font-style: italic;
+    padding-right: 10px;
 }
 .selected {
     border: 1px solid green;
