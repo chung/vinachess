@@ -16,6 +16,50 @@ vnc.mirror = function(grid) {
   return mgrid;
 }
 
+// parse a sorted array of string to tree structure
+vnc.toTree = function(a) {
+  if (a.length === 0) return {};
+  else if (a.length === 1) return {name: a[0].toString()};
+  // first get the root: the longest common string
+  var root = vnc.getRoot(a);
+  if (!root || root.length === 0) {
+    return vnc.getChildren(a);
+  } else {
+    var b = a.map(function (e) { return e.slice(root.length); });
+    return {name: root.toString(), children: vnc.getChildren(b)};
+  }
+};
+
+vnc.getRoot = function(a) {
+  if (!a || a.length === 0) return null;
+  var v;
+  for (var i = 0; ; i++) {
+    v = a[0][i];
+    if (v === undefined) return a[0].slice(0, i);
+    for (var j = 1; j < a.length; j++) {
+      if (a[j][i] !== v) return a[0].slice(0, i);
+    }
+  }
+  return null;
+}
+
+vnc.getChildren = function(a) {
+  if (a.length === 1) return [{name: a[0].toString()}];
+  var idx = 0;
+  for (var i = 1; i < a.length; i++) {
+    var root = vnc.getRoot(a.slice(0, i+1));
+    if (!root || root.length === 0) {
+      idx = i;
+      break;
+    }
+  }
+  if (idx < 2) {
+    return [{name: a[0].toString()}].concat(vnc.toTree(a.slice(1)));
+  } else {
+    return [vnc.toTree(a.slice(0, idx))].concat(vnc.getChildren(a.slice(idx)));
+  }
+}
+
 vnc.MOVE_REGEX = /([X|P|M|S|T|B][t|g|s]*)(\d)([\.|\-|\/])(\d)/gm;
 
 // neutralize a note so it makes sense for mirror board
@@ -94,7 +138,7 @@ vnc.Board.prototype.newGame = function(white, black, turn) {
   this.paths.push(this.history);
   vnc.Board.prototype.init.call(this);
   this.index = 0;
-  this.history[this.index] = { move: '',
+  this.history[this.index] = { move: null,
                              white: vnc.copy(this.white),
                              black: vnc.copy(this.black),
                              grid:  vnc.copy(this.grid)};
@@ -321,11 +365,12 @@ vnc.Board.prototype.getMoves = function() {
   // trying to sort paths
   var pathsMap = {};
   this.paths.forEach(function(path, idx) {
-    var allMoves = '';
-    path.forEach(function(m) { allMoves += m.move });
-    pathsMap[allMoves] = idx;
+    var allMoves = [];
+    path.forEach(function(m) { if (m.move) allMoves = allMoves.concat(m.move) });
+    pathsMap[allMoves.toString()] = {index: idx, moves: allMoves};
   });
   var sortedPaths = Object.keys(pathsMap).sort();
+  var sortedMoves = [];
   var curRow = Math.floor((this.index+1)/2);
   for (var i = 1; i < nmax; i += 2) {
     html += '<tr>';
@@ -333,12 +378,13 @@ vnc.Board.prototype.getMoves = function() {
     var rowClass = curRow === row ? ' curpath' : '';
     for (var j = 0; j < sortedPaths.length; j++) {
       var p = pathsMap[sortedPaths[j]];
+      if (i === 1) sortedMoves.push(p.moves);
       if (j === 0) html += '<td class="movenumber' + rowClass + '">' + row + '</td>';
-      html += moveSpan(this, i, p) + moveSpan(this, i+1, p);
+      html += moveSpan(this, i, p.index) + moveSpan(this, i+1, p.index);
     }
     html += '</tr>';
   }
-  return html + '</table>';
+  return {html: html + '</table>', tree: vnc.toTree(sortedMoves)};
 };
 
 // getMove(P1, h8, h7) = 'P2-3'

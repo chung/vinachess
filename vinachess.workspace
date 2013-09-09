@@ -8,6 +8,7 @@
             <File name="public\chess.css" />
             <File name="public\chess.js" />
             <File name="public\index.html" />
+            <File name="public\tree.js" />
         </Folder>
         <Folder name="src">
             <Folder name="lib">

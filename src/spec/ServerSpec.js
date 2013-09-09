@@ -220,3 +220,48 @@ describe("vnc.neutralize", function() {
     expect(vnc.neutralize('1. P2-5 M8.7\n2. M2.3 M2.3')).toEqual('1. P8-5 M2.3\n2. M8.7 M8.7');
   });
 });
+
+
+describe("vnc.getRoot", function() {
+  it("should get the longest common string correctly", function() {
+    expect(vnc.getRoot([])).toBeNull();
+    expect(vnc.getRoot(['abc'])).toEqual('abc');
+    expect(vnc.getRoot(['abc', 'abd'])).toEqual('ab');
+  });
+
+  it("should getRoot correctly for both string & array", function() {
+    expect(vnc.getRoot(['ab', 'bc'])).toEqual('');
+    expect(vnc.getRoot([['a','b'], ['b','c']])).toEqual([]);
+    expect(vnc.getRoot(['ab', 'ac'])).toEqual('a');
+    expect(vnc.getRoot([['a','b'], ['a','c']])).toEqual(['a']);
+  });
+});
+
+
+describe("vnc.toTree", function() {
+  it("should convert to tree json correctly", function() {
+    expect(vnc.toTree([])).toEqual({});
+    expect(vnc.toTree(['abc'])).toEqual({name: 'abc'});
+    expect(vnc.toTree(['abc', 'abd'])).toEqual({name: 'ab', children: [{name: 'c'}, {name: 'd'}]});
+    expect(vnc.toTree(['abc', 'abde', 'abdfg'])).toEqual({name: 'ab', children: [{name: 'c'}, {name: 'd', children: [{name: 'e'}, {name: 'fg'}]}]});
+    expect(vnc.toTree(['abcd', 'abce', 'abd'])).toEqual({name: 'ab', children: [{name: 'c', children: [{name: 'd'}, {name: 'e'}]}, {name: 'd'}]});
+  });
+
+  it("should convert to partial tree correctly", function() {
+    expect(vnc.getChildren(['ab', 'bc'])).toEqual([{name: 'ab'}, {name: 'bc'}]);
+    expect(vnc.getChildren(['ab', 'ac', 'bd'])).toEqual([{name: 'a', children: [{name: 'b'}, {name: 'c'}]}, {name: 'bd'}]);
+    expect(vnc.getChildren(['ab', 'bc', 'bd'])).toEqual([{name: 'ab'}, {name: 'b', children: [{name: 'c'}, {name: 'd'}]}]);
+  });
+
+  it("should convert array of array to partial tree correctly", function() {
+    expect(vnc.getChildren([['a','b'], ['b','c']])).toEqual([{name: 'a,b'}, {name: 'b,c'}]);
+    expect(vnc.getChildren([['a','b'], ['a','c'], ['b','d']])).toEqual([{name: 'a', children: [{name: 'b'}, {name: 'c'}]}, {name: 'b,d'}]);
+  });
+
+  it("should convert chess moves to tree json correctly", function() {
+    expect(vnc.toTree([['P2-5','M2.1'], ['P2-5','M2.3']]))
+      .toEqual({name: 'P2-5', children: [{name: 'M2.1'}, {name: 'M2.3'}]});
+    expect(vnc.toTree([['P2-5','M2.1', 'X1-2'], ['P2-5','M2.1', 'X1.1'], ['P2-5','M2.3']]))
+      .toEqual({name: 'P2-5', children: [{name: 'M2.1', children: [{name: 'X1-2'}, {name: 'X1.1'}]}, {name: 'M2.3'}]});
+  });
+});

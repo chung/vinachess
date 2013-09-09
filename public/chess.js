@@ -60,9 +60,11 @@ window.onload = function() {
         socket.emit('select', { index: idx, path: pid });
     };
     var showMoves = function() {
-        $('#moves').html(vnc.Board.prototype.getMoves.call(board));
+        var moves = vnc.Board.prototype.getMoves.call(board);
+        $('#moves').html(moves.html);
         var sch = Math.floor((board.index+1)/2) * 1.8 * $('#moves')[0].scrollHeight / vnc.max(board.paths);
         $('#moves').stop().animate({scrollTop: sch}, 1000);
+        if (moves.tree.children) drawTree(moves.tree);
 
     };
     var startClocks = function(who) {
@@ -179,4 +181,4 @@ window.onload = function() {
     var clock2 = $('#clock2').FlipClock({
         autoStart: false
     });
-}
+};

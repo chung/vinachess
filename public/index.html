@@ -6,53 +6,59 @@
   <link rel="stylesheet" href="jquery/jquery-ui.css" />
   <link rel="stylesheet" href="clock/css/flipclock.css">
 </head>
-<body class="main">
-<div id="clock1"></div>
-<div id="control">
-  <image id="rotate" src="images/rotate.png" title="Rotate Board">
-  <input id="undo" type="button" value="<< Undo">
-  <input id="redo" type="button" value="Redo >>">
-  <span id="turn"></span>
-  <input id="new" type="button" value="New Game">
-  <input id="room" type="button" value="New Room">
-  <span id="status"></span>
-</div>
-<div id="playarea">
-  <div id="board"></div>
-  <div id="content">
-    <div id="welcome"></div>
-    <div id="tabs">
-      <ul>
-        <li><a href="#moves">Moves</a></li>
-        <li><a href="#notes">Notes</a></li>
-        <li><a href="#users">Users</a></li>
-        <li><a href="#chats">Chats</a></li>
-      </ul>
-      <div id="moves"></div>
-      <div id="notes">
-        <textarea id="notefield"></textarea>
-        <input id="addnote" type="button" value="Add Note">
-        <input id="loadgame" type="button" value="Load Game">
-        <span id="notestatus">Note has been saved!</span>
-        <span id="loadstatus">Game has been loaded!</span>
-      </div>
-      <div id="users"></div>
-      <div id="chats">
-        <input id="field">
-        <input id="send" type="button" value="send">
-        <div id="chat"></div>
+<body>
+  <div class="main">
+    <div id="clock1"></div>
+    <div id="control">
+      <image id="rotate" src="images/rotate.png" title="Rotate Board">
+      <input id="undo" type="button" value="<< Undo">
+      <input id="redo" type="button" value="Redo >>">
+      <span id="turn"></span>
+      <input id="new" type="button" value="New Game">
+      <input id="room" type="button" value="New Room">
+      <span id="status"></span>
+    </div>
+    <div id="playarea">
+      <div id="board"></div>
+      <div id="content">
+        <div id="welcome"></div>
+        <div id="tabs">
+          <ul>
+            <li><a href="#moves">Moves</a></li>
+            <li><a href="#notes">Notes</a></li>
+            <li><a href="#users">Users</a></li>
+            <li><a href="#chats">Chats</a></li>
+          </ul>
+          <div id="moves"></div>
+          <div id="notes">
+            <textarea id="notefield"></textarea>
+            <input id="addnote" type="button" value="Add Note">
+            <input id="loadgame" type="button" value="Load Game">
+            <span id="notestatus">Note has been saved!</span>
+            <span id="loadstatus">Game has been loaded!</span>
+          </div>
+          <div id="users"></div>
+          <div id="chats">
+            <input id="field">
+            <input id="send" type="button" value="send">
+            <div id="chat"></div>
+          </div>
+        </div>
       </div>
     </div>
+    <div id="clock2"></div>
   </div>
-</div>
-<div id="clock2"></div>
+  <div id="tree"></div>
 
 <script src="jquery/jquery.min.js"></script>
 <script src="jquery/jquery-ui.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="server.js"></script>
+<script src="tree.js"></script>
 <script src="chess.js"></script>
 <script src="clock/js/flipclock/libs/prefixfree.min.js"></script>
 <script src="clock/js/flipclock/flipclock.min.js"></script>
+
 </body>
 </html>

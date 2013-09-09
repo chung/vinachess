@@ -6,6 +6,14 @@ html, body {
 }
 .main {
     background-color: #F6F4F0;
+    width: 930px;
+    float: left;
+}
+#tree {
+    height: 800px;
+    width: 930px;
+    position: relative;
+    display: inline-block;
 }
 #control {
     margin-bottom: 10px;
@@ -13,7 +21,6 @@ html, body {
 #playarea {
     height: 521px;
     min-width: 940px;
-    border: solid 0px red;
 }
 #board {
     position: relative;
@@ -265,3 +272,24 @@ html, body {
 .j7 { left: 314px; top: 462.5px; }
 .j8 { left: 365px; top: 462.5px; }
 .j9 { left: 416px; top: 462.5px; }
+
+
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 9px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
