@@ -242,6 +242,7 @@ describe("vnc.toTree", function() {
   it("should convert to tree json correctly", function() {
     expect(vnc.toTree([])).toEqual({});
     expect(vnc.toTree(['abc'])).toEqual({name: 'abc'});
+    expect(vnc.toTree(['a', 'b'])).toEqual({name: '', children: [{name: 'a'}, {name: 'b'}]});
     expect(vnc.toTree(['abc', 'abd'])).toEqual({name: 'ab', children: [{name: 'c'}, {name: 'd'}]});
     expect(vnc.toTree(['abc', 'abde', 'abdfg'])).toEqual({name: 'ab', children: [{name: 'c'}, {name: 'd', children: [{name: 'e'}, {name: 'fg'}]}]});
     expect(vnc.toTree(['abcd', 'abce', 'abd'])).toEqual({name: 'ab', children: [{name: 'c', children: [{name: 'd'}, {name: 'e'}]}, {name: 'd'}]});

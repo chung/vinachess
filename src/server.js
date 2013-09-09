@@ -23,7 +23,7 @@ vnc.toTree = function(a) {
   // first get the root: the longest common string
   var root = vnc.getRoot(a);
   if (!root || root.length === 0) {
-    return vnc.getChildren(a);
+    return {name: '', children: vnc.getChildren(a)};
   } else {
     var b = a.map(function (e) { return e.slice(root.length); });
     return {name: root.toString(), children: vnc.getChildren(b)};
@@ -384,7 +384,9 @@ vnc.Board.prototype.getMoves = function() {
     }
     html += '</tr>';
   }
-  return {html: html + '</table>', tree: vnc.toTree(sortedMoves)};
+  var tree = vnc.toTree(sortedMoves);
+  //tree.name = '<tspan>P2.3 M3.2</tspan><tspan>P3.4 X1.2</tspan>';
+  return {html: html + '</table>', tree: tree};
 };
 
 // getMove(P1, h8, h7) = 'P2-3'

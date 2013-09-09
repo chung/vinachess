@@ -64,7 +64,7 @@ window.onload = function() {
         $('#moves').html(moves.html);
         var sch = Math.floor((board.index+1)/2) * 1.8 * $('#moves')[0].scrollHeight / vnc.max(board.paths);
         $('#moves').stop().animate({scrollTop: sch}, 1000);
-        if (moves.tree.children) drawTree(moves.tree);
+        drawTree(moves.tree);
 
     };
     var startClocks = function(who) {
