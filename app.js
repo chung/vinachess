@@ -175,6 +175,6 @@ var findUser = function(username) {
     }
 }
 
-app.get("/room/:id", function(req, res){
-  res.end('welcome to room: ' + req.params.id + '. your ip is ' + req.ip);
+app.get("/g/:id", function(req, res){
+  res.redirect('/?room=' + req.params.id);
 });

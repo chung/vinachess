@@ -2,7 +2,8 @@
 var drawTree = function(treedata) {
   var margin = {top: 20, right: 20, bottom: 20, left: 70},
       width = 1960 - margin.right - margin.left,
-      height = 800 - margin.top - margin.bottom;
+      height = 800 - margin.top - margin.bottom,
+      depth = 100;
       
   var i = 0,
       duration = 750,
@@ -47,9 +48,9 @@ var drawTree = function(treedata) {
         links = tree.links(nodes);
   
     // Normalize for fixed-depth.
-    nodes.forEach(function(d) { d.y = d.depth * 60; });
+    nodes.forEach(function(d) { d.y = d.depth * depth; });
   
-    // Update the nodes…
+    // Update the nodes
     var node = svg.selectAll("g.node")
         .data(nodes, function(d) { return d.id || (d.id = ++i); });
   
