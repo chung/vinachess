@@ -203,7 +203,7 @@ vnc.parse = function(board, move, color) {
     }
   }
   // FIXME: should throw error if still here ?
-  console.log('Error: no matching for move: ' + move);
+  //console.log('Error: no matching for move: ' + move);
 };
 
 vnc.Board.prototype.move = function() {

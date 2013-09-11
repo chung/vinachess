@@ -2,26 +2,33 @@ var vnc = vnc || {};
 
 vnc.next = function(b, c) {
   if (c === undefined) return vnc.next(b, b.turn);
-  return vnc.alphabeta(b, 4, -100000, 100000, c);
+  return vnc.alphabeta(b, 2, -100000, 100000, c);
 }
 
 vnc.alphabeta =  function(b, d, alpha, beta, c) {
-  if (d === 0) return {value: vnc.eval(b)};
-  var ms = vnc.allMoves(b), m;
+  //console.log('calling with d = ' + d + ', alpha = ' + alpha + ', beta = ' + beta + ', turn is ' + c);
+  if (d === 0) return {value: vnc.eval(b), move: []};
+  var ms = vnc.allMoves(b), m, ab, i;
   if (c === 1) {
-    for (var i = 0; i < ms.length; i++) {
-      m = ms[i];
-      b.move(m);
-      alpha = Math.max(alpha, vnc.alphabeta(b, d-1, alpha, beta, 1-c).value);
+    for (i = 0; i < ms.length; i++) {
+      b.move(ms[i]);
+      ab = vnc.alphabeta(b, d-1, alpha, beta, 1-c);
+      if (alpha < ab.value) {
+        alpha = ab.value;
+        m = [ms[i]].concat(ab.move);
+      }
       b.undo();
       if (beta <= alpha) break;
     }
     return {value: alpha, move: m};
   } else {
-    for (var i = 0; i < ms.length; i++) {
-      m = ms[i];
-      b.move(m);
-      beta = Math.min(beta, vnc.alphabeta(b, d-1, alpha, beta, 1-c).value);
+    for (i = 0; i < ms.length; i++) {
+      b.move(ms[i]);
+      ab = vnc.alphabeta(b, d-1, alpha, beta, 1-c);
+      if (beta > ab.value) {
+        beta = ab.value;
+        m = [ms[i]].concat(ab.move);
+      }
       b.undo();
       if (beta <= alpha) break;
     }
@@ -29,52 +36,79 @@ vnc.alphabeta =  function(b, d, alpha, beta, c) {
   }
 }
 
-vnc.allMoves = function(b) {
-  var side = b[vnc.color(b.turn)], moves = [];
-  for (var type in side) {
-    var ps = side[type];
+vnc.allMoves = function(b, t) {
+  var side = vnc.pieces(b, b.turn), moves = [];
+  if (t) {
+    var ps = side[t];
     for (var i = 0; i < ps.length; i++) {
-      var p = ps[i];
-      moves = moves.concat(vnc.getMoves(b, type, p));
+      moves = moves.concat(vnc.getMoves(b, t, ps[i]));
+    }
+    return moves;
+  } else {
+    for (var type in side) {
+      moves = moves.concat(vnc.allMoves(b, type));
     }
   }
-  return moves;  
+  return moves;
 }
 
 // getMoves(b, 'P', 'c2') = [P2-1, P2.1 ...]
 vnc.getMoves = function(b, type, pos) {
+  var ls = [], ms = [];
   switch(type) {
-  case 'Tg': return [];
-  case 'X': return [];
+  case 'X':
   case 'P':
-    var ls = [], ms = [];
+  case 'B':
+  case 'Tg':
     for (var i = 0; i < vnc.Piece.Y; i++) {
       if (vnc.Piece.LETTER[i] !== pos[0]) {
         ls.push(vnc.Piece.LETTER[i] + pos[1]);
       }
     }
-    for (var i = 0; i < vnc.Piece.X; i++) {
-      if (i !== +pos[1]) {
-        ls.push(pos[0] + i);
+    for (var x = 1; x <= vnc.Piece.X; x++) {
+      if (x !== +pos[1]) {
+        ls.push(pos[0] + x);
       }
     }
-    for (var i = 0; i < ls.length; i++) {
-      var m = vnc.Board.prototype.getMove.call(b, type+b.turn, pos, ls[i], b.turn);
-      if (m) ms.push(m);
-    }
-    return ms;
-  case 'M': return [];
-  case 'T': return [];
-  case 'S': return [];
-  case 'B': return [];
-  default: return [];
+    break;
+  case 'M': ls = vnc.genMoves(pos, 1, 2).concat(vnc.genMoves(pos, 2, 1)); break;
+  case 'T': ls = vnc.genMoves(pos, 2, 2); break;
+  case 'S': ls = vnc.genMoves(pos, 1, 1); break;
+  default: break;
+  }
+  for (var i = 0; i < ls.length; i++) {
+    var m = vnc.Board.prototype.getMove.call(b, type+b.turn, pos, ls[i], b.turn);
+    if (m) ms.push(m);
+  }
+  return ms;
+}
+
+vnc.genMoves = function(pos, x, y) {
+  var ms = [];
+  var px = +pos[1];
+  var py = vnc.Piece.LETTER.indexOf(pos[0]);
+  ms = ms.concat(vnc.genMove(px + x, py + y));
+  ms = ms.concat(vnc.genMove(px + x, py - y));
+  ms = ms.concat(vnc.genMove(px - x, py + y));
+  ms = ms.concat(vnc.genMove(px - x, py - y));
+  return ms;
+}
+
+vnc.genMove = function(x, y) {
+  if (x > 0 && x <= vnc.Piece.X && y >= 0 && y < vnc.Piece.Y) {
+    return [vnc.Piece.LETTER[y] + x];
   }
   return [];
 }
 
+// return a copy of all the pieces for color c
+vnc.pieces = function(b, c) {
+  return vnc.copy(b[vnc.color(c)]);
+}
+
 vnc.eval = function(b, c) {
   if (c === undefined) return vnc.eval(b, vnc.Piece.WHITE) - vnc.eval(b, vnc.Piece.BLACK);
-  var value = 0, side = b[vnc.color(c)];
+  var value = 0, side = vnc.pieces(b, c);
   for (var type in side) {
     var ps = side[type];
     for (var i = 0; i < ps.length; i++) {
@@ -89,7 +123,7 @@ vnc.eval = function(b, c) {
 // count number of pieces left
 vnc.count = function(b, c) {
   if (c === undefined) return vnc.count(b, vnc.Piece.WHITE) + vnc.count(b, vnc.Piece.BLACK);
-  var value = 0, side = b[vnc.color(c)];
+  var value = 0, side = vnc.pieces(b, c);
   for (var type in side) {
     value += side[type].length;
   }

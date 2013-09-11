@@ -80,14 +80,31 @@ describe("vnc.getMoves", function() {
     b.newGame();
   });
 
-  it("should show correct legal moves", function() {
+  it("should return correct legal moves", function() {
+    expect(vnc.getMoves(b, 'X', 'a1')).toEqual([ 'X1.1', 'X1.2' ]);
+    expect(vnc.getMoves(b, 'B', 'd5')).toEqual([ 'B5.1' ]);
+    expect(vnc.getMoves(b, 'Tg', 'a5')).toEqual([ 'Tg5.1' ]);
     expect(vnc.getMoves(b, 'P', 'c2')).toEqual([ 'P2/1', 'P2.1', 'P2.2', 'P2.3', 'P2.4', 'P2.7', 'P2-1', 'P2-3', 'P2-4', 'P2-5', 'P2-6', 'P2-7' ]);
-    expect(vnc.getMoves(b, 'P', 'c8')).toEqual([ 'P8/1', 'P8.1', 'P8.2', 'P8.3', 'P8.4', 'P8.7', 'P8-9', 'P8-3', 'P8-4', 'P8-5', 'P8-6', 'P8-7' ]);
-    //expect(vnc.allMoves(b)).toEqual([ 'P2/1', 'P2.1', 'P2.2', 'P2.3', 'P2.4', 'P2.7', 'P2-1', 'P2-3', 'P2-4', 'P2-5', 'P2-6', 'P2-7' ]);
+    expect(vnc.getMoves(b, 'P', 'c8')).toEqual([ 'P8/1', 'P8.1', 'P8.2', 'P8.3', 'P8.4', 'P8.7', 'P8-3', 'P8-4', 'P8-5', 'P8-6', 'P8-7', 'P8-9' ]);
+    expect(vnc.getMoves(b, 'M', 'a2')).toEqual([ 'M2.3', 'M2.1' ]);
+    expect(vnc.getMoves(b, 'T', 'a3')).toEqual([ 'T3.5', 'T3.1' ]);
+    expect(vnc.getMoves(b, 'S', 'a6')).toEqual([ 'S6.5' ]);
+    expect(vnc.allMoves(b).length).toEqual(44);
+    b.move('P2-5', 'P8-5', 'M2.3', 'M8.7', 'X1-2', 'X1.1', 'X2.4', 'X9-4');
+    expect(vnc.getMoves(b, 'X', 'e2').length).toEqual(17);
+    expect(vnc.getMoves(b, 'X', 'a9').length).toEqual(2);
+    expect(vnc.allMoves(b, 'X').length).toEqual(19);
+    expect(vnc.allMoves(b).length).toEqual(48);
+  });
+
+  it("should return correct legal moves for X", function() {
+    b.move('P2-5', 'P8-5', 'M2.3', 'M8.7', 'X1-2', 'X1.1', 'X2.3', 'X9-4');
+    expect(vnc.allMoves(b, 'X').length).toEqual(11);
+    expect(vnc.allMoves(b).length).toEqual(40);
   });
 });
 
-describe("vnc.next", function() {
+xdescribe("vnc.next", function() {
   var b;
   beforeEach(function() {
     b = new vnc.Board();
@@ -95,6 +112,7 @@ describe("vnc.next", function() {
   });
 
   it("should show P2-5 as next move", function() {
+    b.move('T3.5', 'M8.7');
     expect(vnc.next(b)).toEqual({});
   });
 });
