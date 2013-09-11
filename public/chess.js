@@ -124,6 +124,11 @@ window.onload = function() {
             $('#loadgame').hide();
             startClocks(board.turn);
         }
+        if (board.lastMove.move) {
+          $('#status').html("Move: " + board.lastMove.move + " | Score: " + vnc.eval(board));
+        } else {
+          $('#status').html("");
+        }
     });
 
     sendButton.onclick = sendMessage = function() {

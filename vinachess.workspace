@@ -23,9 +23,12 @@
                 <File name="src\spec\README.md" />
                 <File name="src\spec\ServerSpec.js" />
                 <File name="src\spec\SpecHelper.js" />
+                <File name="src\spec\EvalSpec.js" />
             </Folder>
             <File name="src\server.js" />
             <File name="src\SpecRunner.html" />
+            <File name="src\score.js" />
+            <File name="src\eval.js" />
         </Folder>
         <File name=".gitignore" />
         <File name="app.js" />

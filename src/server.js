@@ -1,4 +1,4 @@
-var vnc = {};
+var vnc = vnc || {};
 
 vnc.copy = function(o) { return JSON.parse(JSON.stringify(o)); };
 // rotate(a1) = j9
@@ -138,7 +138,8 @@ vnc.Board.prototype.newGame = function(white, black, turn) {
   this.paths.push(this.history);
   vnc.Board.prototype.init.call(this);
   this.index = 0;
-  this.history[this.index] = { move: null,
+  this.count = 32; // 32 pieces at the start
+  this.history[this.index] = {move: null, count: 32,
                              white: vnc.copy(this.white),
                              black: vnc.copy(this.black),
                              grid:  vnc.copy(this.grid)};
@@ -205,8 +206,18 @@ vnc.parse = function(board, move, color) {
   console.log('Error: no matching for move: ' + move);
 };
 
-vnc.Board.prototype.move = function(m) {
+vnc.Board.prototype.move = function() {
+  for (var i = 0; i < arguments.length; i++) {
+    vnc.Board.prototype._move.call(this, arguments[i]);
+  }
+  return this;
+}
+
+vnc.Board.prototype._move = function(m) {
   var mv = vnc.parse(this, m, this.turn);
+  this.lastMove = {move: m};
+  this.lastMove.from = !this.turn ? mv.from : vnc.rotate(mv.from);
+  this.lastMove.to = !this.turn ? mv.to : vnc.rotate(mv.to);
   vnc.Board.prototype.update.call(this, mv.from, null, this.turn);
   vnc.Board.prototype.update.call(this, mv.to, mv.type, this.turn);
   // get all piece of this type
@@ -218,12 +229,11 @@ vnc.Board.prototype.move = function(m) {
   var x = vnc.Piece.X + 1 - mv.to[1];
   var y = vnc.Piece.Y - 1 - vnc.Piece.LETTER.indexOf(mv.to[0]);
   var lastPos = vnc.Piece.LETTER[y] + x;
-  this.lastMove.from = this.turn ? mv.from : vnc.rotate(mv.from);
-  this.lastMove.to = this.turn ? mv.to : vnc.rotate(mv.to);
   var p = vnc.Board.prototype.find.call(this, lastPos);
   if (p) { // piece captured
     // remove the piece from its collection
     this[vnc.color(this.turn)][p.type].splice(p.index, 1);
+    this.count -= 1;
   }
   this.index += 1;
   // check if just created a new path:
@@ -231,7 +241,7 @@ vnc.Board.prototype.move = function(m) {
     this.paths.push(vnc.copy(this.history));
     this.history.splice(this.index, this.history.length - this.index);
   }
-  this.history[this.index] = { move: m,
+  this.history[this.index] = { move: m, count: this.count,
                                white: vnc.copy(this.white),
                                black: vnc.copy(this.black),
                                grid:  vnc.copy(this.grid)};
@@ -265,7 +275,15 @@ vnc.Board.prototype.select = function(idx, path) {
     this.grid  = vnc.copy(hist.grid);
     this.white = vnc.copy(hist.white);
     this.black = vnc.copy(hist.black);
-    this.lastMove = {}; // FIXME: get appropriate last move
+    this.count = hist.count;
+    this.lastMove = {move: hist.move};
+    if (hist.move) {
+      var mv = vnc.parse(this, hist.move, this.turn);
+      if (mv) {
+        this.lastMove.from = this.turn ? mv.from : vnc.rotate(mv.from);
+        this.lastMove.to = this.turn ? mv.to : vnc.rotate(mv.to);
+      }
+    }
   }
   return this;
 };

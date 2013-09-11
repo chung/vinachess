@@ -18,8 +18,8 @@ client.get('vinachess', 'latest', function (err, doc, res) {
 });
 
 app.use(express.static(__dirname + '/public'));
-app.get("/server.js", function(req, res){
-  fs.readFile('./src/server.js', function (err, data) {
+app.get("/js/:file", function(req, res){
+  fs.readFile('./src/' + req.params.file, function (err, data) {
     if(err) throw err;
     res.writeHead(200);
     res.end(data);
@@ -31,9 +31,9 @@ var io = require('socket.io').listen(app.listen(port));
 console.log("Listening on port " + port);
 
 // need this for heroku
-io.configure(function () { 
-  io.set("transports", ["xhr-polling"]); 
-  io.set("polling duration", 10); 
+io.configure(function () {
+  io.set("transports", ["xhr-polling"]);
+  io.set("polling duration", 10);
 });
 
 setTimeout(function() { io.sockets.emit('restart') }, 5000);

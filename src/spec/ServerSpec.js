@@ -46,10 +46,10 @@ describe("Chess board", function() {
   });
 
   it("should correctly move pieces", function() {
-    b.move('Tg5.1'); b.move('Tg5.1');
-    b.move('P2-5'); b.move('M2.3');
-    b.move('P8.2'); b.move('X1.1');
-    b.move('P5/1'); b.move('M3/5');
+    b.move('Tg5.1', 'Tg5.1');
+    b.move('P2-5', 'M2.3');
+    b.move('P8.2', 'X1.1');
+    b.move('P5/1', 'M3/5');
     expect(b.white.Tg).toEqual(['b5']);
     expect(b.black.Tg).toEqual(['b5']);
     expect(b.white.P).toEqual(['b5', 'e8']);
@@ -58,9 +58,9 @@ describe("Chess board", function() {
   });
 
   it("should be able to create new path", function() {
-    b.move('P2-5'); b.move('M2.3');
-    b.move('P8.2'); b.move('X1.1');
-    b.move('Tg5.1'); b.move('Tg5.1');
+    b.move('P2-5', 'M2.3');
+    b.move('P8.2', 'X1.1');
+    b.move('Tg5.1', 'Tg5.1');
     b.undo(); b.undo();
     b.move('P5/1');
     expect(b.paths.length).toEqual(2);
@@ -70,9 +70,9 @@ describe("Chess board", function() {
   });
 
   it("should be able to switch path", function() {
-    b.move('P2-5'); b.move('M2.3');
-    b.move('P8.2'); b.move('X1.1');
-    b.move('Tg5.1'); b.move('Tg5.1');
+    b.move('P2-5', 'M2.3');
+    b.move('P8.2', 'X1.1');
+    b.move('Tg5.1', 'Tg5.1');
     b.undo(); b.undo();
     b.move('P5/1');
     expect(b.paths.length).toEqual(2);
@@ -180,8 +180,7 @@ describe("Chess board", function() {
   });
 
   it("should be able to clear the undo history after making new move", function() {
-    b.move('P2-5');
-    b.move('P8-5');
+    b.move('P2-5', 'P8-5');
     expect(b.grid[2][7]).toBeNull();
     b.undo();
     expect(b.turn).toEqual(vnc.Piece.BLACK);
