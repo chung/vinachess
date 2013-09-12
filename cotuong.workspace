@@ -1,5 +1,5 @@
 <NotepadPlus>
-    <Project name="vinachess">
+    <Project name="cotuong">
         <Folder name="public">
             <Folder name="images">
                 <File name="public\images\board.gif" />
@@ -29,12 +29,13 @@
             <File name="src\SpecRunner.html" />
             <File name="src\score.js" />
             <File name="src\eval.js" />
+            <File name="src\search.js" />
         </Folder>
         <File name=".gitignore" />
         <File name="app.js" />
         <File name="package.json" />
         <File name="Procfile" />
         <File name="README.md" />
-        <File name="vinachess.workspace" />
+        <File name="cotuong.workspace" />
     </Project>
 </NotepadPlus>
