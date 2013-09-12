@@ -24,6 +24,7 @@
                 <File name="src\spec\ServerSpec.js" />
                 <File name="src\spec\SpecHelper.js" />
                 <File name="src\spec\EvalSpec.js" />
+                <File name="src\spec\SearchSpec.js" />
             </Folder>
             <File name="src\server.js" />
             <File name="src\SpecRunner.html" />
