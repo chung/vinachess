@@ -60,6 +60,11 @@ describe("Chess board", function() {
     expect(search.genAllMoves(b, 1).length).toEqual(44);
   });
 
+  it("search.convert should convert from traditional board to grid successfully", function() {
+    var board = new vnc.Board(); board.newGame();
+    expect(search.convert(board.grid)).toEqual(b);
+  });
+
   it("search.alphabeta should return all correct legal move position", function() {
     b = [
     0, 6, 0, 1,-1, 0, 0, 0, 0, -6,
@@ -71,6 +76,21 @@ describe("Chess board", function() {
     3, 0, 0, 1, 0, 0,-1, 0, 0, -3,
     0, 0, 5, 0, 0, 0, 0,-5, 0, -4,
     6, 0, 0, 1, 0, 0,-1, 0, 0, -6];
-    expect(search.alphabeta(b, 2, -100000, 100000, -1)).toEqual(44);
+    expect(search.evaluate(b)).toEqual(290);
+    //expect(search.mtdf(b, 2, 290, 1)).toEqual({ value : 800, move : [ [ 38, 17 ] ] });
+    //expect(search.abmem(b, 4, -790, 620, 1)).toEqual(660);
+    b = [
+    0, 6, 0, 1,-1, 0, 0, 0, 0, -6,
+    4, 0, 5, 0, 0, 0, 0, 4, 0, -4,
+    3, 0, 0, 1, 0, 0,-1, 0, 0, -3,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, -2,
+    7, 0, 0, 1, 0, 0,-1, 0, -7, 0,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, -2,
+    3, 0, 0, 1, 0, 0,-1, 0, 0, -3,
+    0, 0, 5, 0, 0, 0, 0,-5, 0, -4,
+    6, 0, 0, 1, 0, 0,-1, 0, 0, -6];
+    expect(search.evaluate(b)).toEqual(800);
+    //expect(search.abmem(b, 2, -790, 1720, -1)).toEqual(60);
+    //expect(search.alphabeta(b, 4, -100000, 100000, -1)).toEqual({ value : 1060, move : [ [ 9, 7 ], [ 17, 29 ], [ 79, 67 ], [ 3, 4 ] ] });
   });
 });

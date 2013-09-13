@@ -125,7 +125,8 @@ window.onload = function() {
             startClocks(board.turn);
         }
         if (board.lastMove.move) {
-          $('#status').html("Move: " + board.lastMove.move + " | Score: " + vnc.eval(board));
+          var next = search.next(board);
+          $('#status').html("Move: " + board.lastMove.move + " | Score: " + next.value + " (" + next.move + ")");
         } else {
           $('#status').html("");
         }
