@@ -20,6 +20,12 @@ window.onload = function() {
     var url = document.URL;
     var index = url.indexOf('room=');
     var room = index < 0 ? 'public' : url.substring(index+5, url.length);
+    var worker = new Worker('nextMove.js');
+    var bestMove; // next best move
+    worker.addEventListener('message', function(e) {
+      $('#status').html("Score: " + (board.turn*2-1)*e.data.next.value + " (" + e.data.next.move + ") " + e.data.time);
+      bestMove = e.data.next.move[0];
+    }, false);
 
     var socket = io.connect(url);
     socket.emit('join', { room: room });
@@ -125,8 +131,10 @@ window.onload = function() {
             startClocks(board.turn);
         }
         if (board.lastMove.move) {
-          var next = search.next(board);
-          $('#status').html("Move: " + board.lastMove.move + " | Score: " + (board.turn*2-1)*next.value + " (" + next.move + ")");
+          next = search.next(board);
+          //$('#status').html("Move: " + board.lastMove.move + " | Score: " + (board.turn*2-1)*next.value + " (" + next.move + ")");
+          //bestMove = next.move[0];
+          worker.postMessage({board: board, depth: 4, bestMove: bestMove});
         } else {
           $('#status').html("");
         }
@@ -180,6 +188,9 @@ window.onload = function() {
                 $('#loadstatus').slideUp();
             }, 5000);
         });
+    });
+    $('#hint').click(function() {
+        worker.postMessage({board: board, depth: 5, bestMove: bestMove});
     });
     var clock1 = $('#clock1').FlipClock({
         autoStart: false

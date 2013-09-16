@@ -76,10 +76,10 @@ search.convert = function(b) {
 
 search.history = {};
 // negascout: http://en.wikipedia.org/wiki/Negascout
-search.psv = function(g, d, alpha, beta, c) {
+search.psv = function(g, d, alpha, beta, c, bestMove) {
   if (d === 0) return {value: c*search.evaluate(g), move: []};
   var ms = search.genAllMoves(g, c), m, ab, v, i, old;
-
+  if (bestMove) ms = [bestMove].concat(ms);
   for (i = 0; i < ms.length; i++) {
     old = g[ms[i][1]];
     g[ms[i][1]] = g[ms[i][0]];

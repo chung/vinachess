@@ -9,6 +9,7 @@
             <File name="public\chess.js" />
             <File name="public\index.html" />
             <File name="public\tree.js" />
+            <File name="public\nextMove.js" />
         </Folder>
         <Folder name="src">
             <Folder name="lib">
