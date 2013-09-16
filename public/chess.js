@@ -126,7 +126,7 @@ window.onload = function() {
         }
         if (board.lastMove.move) {
           var next = search.next(board);
-          $('#status').html("Move: " + board.lastMove.move + " | Score: " + next.value + " (" + next.move + ")");
+          $('#status').html("Move: " + board.lastMove.move + " | Score: " + (board.turn*2-1)*next.value + " (" + next.move + ")");
         } else {
           $('#status').html("");
         }

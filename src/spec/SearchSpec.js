@@ -27,6 +27,8 @@ describe("Chess board", function() {
   });
 
   it("genMoves should get correct legal move position", function() {
+    //console.log(search.genAllMoves(b, 1));
+    expect(search.genMoves(b, 40).sort()).toEqual([41]);
     expect(search.genMoves(b, 10).sort()).toEqual([2,22]);
     expect(search.genMoves(b, 0).sort()).toEqual([1,2]);
     expect(search.genMoves(b, 9).sort()).toEqual([7,8]);
@@ -53,6 +55,17 @@ describe("Chess board", function() {
     expect(search.genMoves(b, 48).sort()).toEqual([ 38, 47, 49, 58 ]);
     expect(search.genMoves(b, 1).sort()).toEqual([0,11,2,21,31,41,51,61,71,81]);
     expect(search.genMoves(b, 12).sort()).toEqual([ 11, 13, 14, 15, 16, 19, 2, 22, 32, 42, 52, 62 ]);
+    b = [
+    6, 0, 0, 1, 0, 0,-1, 0, 0, -6,
+    4, 0, 5, 0, 0, 0, 0,-5, 0, -4,
+    3, 0, 0, 1, 0, 0,-1, 0, 0, -3,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, -2,
+    7, 0, 0, 1, 0,-1, 0, 0, 0, -7,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, -2,
+    3,-4, 0, 1, 0, 0,-1, 0, 0, -3,
+    4, 0, 5, 0, 0, 0, 0,-5, 0,  0,
+    6, 0, 0, 1, 0, 0,-1, 0, 0, -6];
+    expect(JSON.stringify(search.genAllMoves(b, 1)).indexOf('[40,41]')).toNotEqual(-1);
   });
 
   it("genAllMoves should return all correct legal move position", function() {
@@ -62,10 +75,10 @@ describe("Chess board", function() {
 
   it("search.convert should convert from traditional board to grid successfully", function() {
     var board = new vnc.Board(); board.newGame();
-    expect(search.convert(board.grid)).toEqual(b);
+    expect(search.convert(board)).toEqual(b);
   });
 
-  it("search.alphabeta should return all correct legal move position", function() {
+  it("search.alphabeta should return the best move", function() {
     b = [
     0, 6, 0, 1,-1, 0, 0, 0, 0, -6,
     4, 0, 5, 0, 0, 0, 0,-5, 0, -4,
@@ -91,6 +104,56 @@ describe("Chess board", function() {
     6, 0, 0, 1, 0, 0,-1, 0, 0, -6];
     expect(search.evaluate(b)).toEqual(800);
     //expect(search.abmem(b, 2, -790, 1720, -1)).toEqual(60);
-    //expect(search.alphabeta(b, 4, -100000, 100000, -1)).toEqual({ value : 1060, move : [ [ 9, 7 ], [ 17, 29 ], [ 79, 67 ], [ 3, 4 ] ] });
+    expect(search.alphabeta(b, 4, -100000, 100000, -1)).toEqual({ value : 1060, move : [ [ 9, 7 ], [ 17, 29 ], [ 79, 67 ], [ 3, 4 ] ] });
+    expect(search.negamax(b, 4, -100000, 100000, -1)).toEqual({ value : -1060, move : [ [ 9, 7 ], [ 17, 29 ], [ 79, 67 ], [ 3, 4 ] ] });
+  });
+});
+
+
+describe("search.psv", function() {
+  var b;
+  beforeEach(function() {
+    b = [
+    0, 6, 0, 1,-1, 0, 0, 0, 0, -6,
+    4, 0, 5, 0, 0, 0, 0, 4, 0, -4,
+    3, 0, 0, 1, 0, 0,-1, 0, 0, -3,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, -2,
+    7, 0, 0, 1, 0, 0,-1, 0, -7, 0,
+    2, 0, 0, 0, 0, 0, 0, 0, 0, -2,
+    3, 0, 0, 1, 0, 0,-1, 0, 0, -3,
+    0, 0, 5, 0, 0, 0, 0,-5, 0, -4,
+    6, 0, 0, 1, 0, 0,-1, 0, 0, -6];
+  });
+
+
+  it("should return the best move", function() {
+    //expect(search.psv(b, 4, -100000, 100000, -1)).toEqual({ value : -1060, move : [ [ 9, 7 ], [ 17, 29 ], [ 79, 67 ], [ 3, 4 ] ] });
+    expect(search.psv(b, 5, -100000, 100000, -1)).toEqual({ value : -670, move : [ [ 9, 7 ], [ 17, 29 ], [ 7, 27 ], [ 3, 4 ], [ 27, 29 ] ] });
+    //expect(search.psv(b, 6, -100000, 100000, -1)).toEqual({ value : -1050, move : [ [ 9, 7 ], [ 17, 29 ], [ 7, 57 ], [ 1, 31 ], [ 79, 67 ], [ 31, 39 ] ] });
+  });
+
+  it("should return the best move 2", function() {
+    search.move(b, [ [ 9, 7 ], [ 17, 29 ] ]);
+    expect(search.psv(b, 4, -100000, 100000, -1)).toEqual({ value : -1050, move : [ [ 7, 57 ], [ 1, 31 ], [ 79, 67 ], [ 31, 39 ] ] });
+  });
+
+  it("should return the correct value", function() {
+    search.move(b, [ [ 9, 7 ], [ 17, 29 ], [ 7, 27 ], [ 3, 4 ], [ 27, 29 ] ]);
+    expect(search.evaluate(b)).toEqual(670);
+  });
+
+  it("should return the correct value 1", function() {
+    search.move(b, [ [ 9, 7 ], [ 17, 29 ], [ 7, 27 ], [ 3, 4 ], [ 27, 29 ], [ 72, 79 ] ]);
+    expect(search.evaluate(b)).toEqual(1080);
+  });
+
+  it("should return the correct value 2", function() {
+    search.move(b, [ [ 9, 7 ], [ 17, 29 ], [ 7, 27 ], [ 1, 51 ], [ 27, 29 ], [ 51, 59 ] ]);
+    expect(search.evaluate(b)).toEqual(800);
+  });
+
+  it("should return the correct value 3", function() {
+    search.move(b, [ [ 9, 7 ], [ 17, 29 ], [ 7, 57 ], [ 1, 31 ], [ 79, 67 ], [ 31, 39 ] ]);
+    expect(search.evaluate(b)).toEqual(1050);
   });
 });

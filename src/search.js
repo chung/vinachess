@@ -4,13 +4,37 @@ var score = score || require('./score.js');
 search.evaluate = function(g) {
   var v = 0, i = 89;
   do {
-    if (g[i] > 0) {
-      v += score.pvalue[g[i]][i] + score.mvalue[g[i]];
-    } else if (g[i] < 0) {
-      v -= score.pvalue[-g[i]][89-i] + score.mvalue[-g[i]];
-    }
+    v += search.value(g, i);
   } while(i--)
   return v;
+}
+
+search.value = function(g, i) {
+  if (g[i] > 0) {
+    return score.pvalue[g[i]][i] + score.mvalue[g[i]];
+  } else if (g[i] < 0) {
+    return -score.pvalue[-g[i]][89-i] - score.mvalue[-g[i]];
+  }
+  return 0;
+}
+
+search.moveValue = function(g, m) {
+  var before, after, capture, i = m[0], j = m[1];
+  before = search.value(g, i) + search.value(g, j);
+  capture = g[j];
+  g[j] = g[i]; g[i] = 0;
+  after = search.value(g, i) + search.value(g, j);
+  // undo move:
+  g[i] = g[j]; g[j] = capture;
+  return after - before;
+}
+
+search.move = function(g, ms) {
+  for (i = 0; i < ms.length; i++) {
+    g[ms[i][1]] = g[ms[i][0]];
+    g[ms[i][0]] = 0;
+  }
+  return g;
 }
 
 search.eval = function(b) {
@@ -18,7 +42,8 @@ search.eval = function(b) {
 }
 
 search.next = function(b) {
-  return search.alphabeta(search.convert(b), 4, -100000, 100000, b.turn ? 1 : -1);
+  var g = search.convert(b);
+  return search.psv(g, 4, -100000, 100000, b.turn ? 1 : -1);
 }
 
 // convert from traditional board to grid
@@ -49,6 +74,36 @@ search.convert = function(b) {
   return g;
 }
 
+search.history = {};
+// negascout: http://en.wikipedia.org/wiki/Negascout
+search.psv = function(g, d, alpha, beta, c) {
+  if (d === 0) return {value: c*search.evaluate(g), move: []};
+  var ms = search.genAllMoves(g, c), m, ab, v, i, old;
+
+  for (i = 0; i < ms.length; i++) {
+    old = g[ms[i][1]];
+    g[ms[i][1]] = g[ms[i][0]];
+    g[ms[i][0]] = 0;
+    ab = search.psv(g, d-1, -alpha-1, -alpha, -c);
+    v = -ab.value;
+    if (v > alpha && v < beta && i > 0) {
+      ab = search.psv(g, d-1, -beta, -alpha, -c);
+    }
+    g[ms[i][0]] = g[ms[i][1]];
+    g[ms[i][1]] = old;
+    if (alpha < -ab.value) {
+      alpha = -ab.value;
+      m = [ms[i]].concat(ab.move);
+    }
+    if (alpha >= beta) {
+      // history heuristics implementation
+      //var key = JSON.stringify(m[i]);
+      //search.history[key] = search.history[key] ? search.history[key] + d*d : d*d;
+      break;
+    }
+  }
+  return {value: alpha, move: m};
+}
 
 
 search.negamax = function(g, d, alpha, beta, c) {
@@ -66,7 +121,7 @@ search.negamax = function(g, d, alpha, beta, c) {
     if (v >= beta) {
       return {value: v, move: [ms[i]].concat(ab.move)};
     }
-    if (v >= alpha) {
+    if (v > alpha) {
       m = [ms[i]].concat(ab.move);
       alpha = v;
     }
@@ -74,29 +129,27 @@ search.negamax = function(g, d, alpha, beta, c) {
   return {value: alpha, move: m};
 }
 
-search.alphabeta =  function(g, d, alpha, beta, c) {
+search.alphabeta =  function(g, d, alpha, beta, c, move) {
   if (d === 0) return {value: search.evaluate(g), move: []};
   var ms = search.genAllMoves(g, c), m, ab, i, old;
 
   for (i = 0; i < ms.length; i++) {
-    old = g[ms[i][1]];
-    g[ms[i][1]] = g[ms[i][0]];
-    g[ms[i][0]] = 0;
+    move = (move && i === 0) ? move : ms[i];
+    old = g[move[1]];
+    g[move[1]] = g[move[0]];
+    g[move[0]] = 0;
     ab = search.alphabeta(g, d-1, alpha, beta, -c);
-    g[ms[i][0]] = g[ms[i][1]];
-    g[ms[i][1]] = old;
+    g[move[0]] = g[move[1]];
+    g[move[1]] = old;
 
     if (c > 0 && alpha < ab.value) {
       alpha = ab.value;
-      m = [ms[i]].concat(ab.move);
-      //console.log(m + ': max alpha = ' + alpha + ', beta = ' + beta);
+      m = [move].concat(ab.move);
     } else if (c < 0 && beta > ab.value) {
       beta = ab.value;
-      m = [ms[i]].concat(ab.move);
-      //console.log(m + ': alpha = ' + alpha + ', min beta = ' + beta);
+      m = [move].concat(ab.move);
     }
     if (beta <= alpha) {
-      //console.log('skipping after move: ' + ms[i] + ' | alpha = ' + alpha + ', min beta = ' + beta);
       break;
     }
   }
@@ -167,49 +220,14 @@ search.abmem =  function(g, d, alpha, beta, c) {
   return v;
 }
 
-search.alphabeta2 =  function(g, d, alpha, beta, c) {
-  //console.log('calling with d = ' + d + ', alpha = ' + alpha + ', beta = ' + beta + ', turn is ' + c);
-  if (d === 0) return {value: search.evaluate(g), move: []};
-  var ms = search.genAllMoves(g, c), m, ab, i;
-  if (c === 1) {
-    for (i = 0; i < ms.length; i++) {
-      var old = g[ms[i][1]];
-      g[ms[i][1]] = g[ms[i][0]];
-      g[ms[i][0]] = 0;
-      ab = search.alphabeta2(g, d-1, alpha, beta, -c);
-      if (alpha < ab.value) {
-        alpha = ab.value;
-        m = [ms[i]].concat(ab.move);
-      }
-      g[ms[i][0]] = g[ms[i][1]];
-      g[ms[i][1]] = old;
-      if (beta <= alpha) break;
-    }
-    return {value: alpha, move: m};
-  } else {
-    for (i = 0; i < ms.length; i++) {
-      var old = g[ms[i][1]];
-      g[ms[i][1]] = g[ms[i][0]];
-      g[ms[i][0]] = 0;
-      ab = search.alphabeta2(g, d-1, alpha, beta, -c);
-      if (beta > ab.value) {
-        beta = ab.value;
-        m = [ms[i]].concat(ab.move);
-      }
-      g[ms[i][0]] = g[ms[i][1]];
-      g[ms[i][1]] = old;
-      if (beta <= alpha) break;
-    }
-    return {value: beta, move: m};
-  }
-}
-
 search.genAllMoves = function(g, c) {
   var ms = [];
   g.forEach(function(x,idx) {
     if (x*c > 0) ms = ms.concat(search.genMoves(g, idx).map(function(y) {return [idx, y]}));
   });
   return ms;
+  //return ms.sort(function(a, b) { return c*search.moveValue(g, b) - c*search.moveValue(g, a); });
+  //return ms.sort(function(a, b) { return (search.history[JSON.stringify(b)] || 0) - (search.history[JSON.stringify(a)] || 0); });
 }
 
 search.genMoves = function(g, idx) {
@@ -282,7 +300,6 @@ search.insertAfterCountCheck = function(g,ms,x1,x2,c,adj) {
   if ((g[x2] && (count === c)) || (!g[x2] && (count === 0))) ms.push(x2);
 }
 
-//console.log(search.genMoves(score.Board, 17).sort());
 
 // export as node module
 var module = module || {};
