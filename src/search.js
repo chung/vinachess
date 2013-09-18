@@ -1,6 +1,16 @@
 var search = {};
 var score = score || require('./score.js');
 
+// return the simple hash key of the board g
+// a better implementation would be http://en.wikipedia.org/wiki/Zobrist_hashing
+search.key = function(g) {
+  var v = 0, i = 89;
+  do {
+    v += g[i] * score.rvalue[i];
+  } while(i--)
+  return v;
+}
+
 search.evaluate = function(g) {
   var v = 0, i = 89;
   do {
@@ -43,7 +53,39 @@ search.eval = function(b) {
 
 search.next = function(b) {
   var g = search.convert(b);
-  return search.psv(g, 4, -100000, 100000, b.turn ? 1 : -1);
+  var r = search.psv(g, 4, -100000, 100000, b.turn ? 1 : -1);
+  r.moves = [r.move[0]];
+  return r;
+}
+
+search.format = function(g, ms) {
+  // first convert if needed
+  if (g.turn) g = search.convert(g);
+  return ms.map(function(m) { return search.formatMove(g, m); });
+}
+
+search.formatMove = function(g, m) {
+  var t, x1, x2, y1, y2, v = Math.abs(g[m[0]]), c = g[m[0]]/v;
+  switch(v) {
+  case 7: t = 'Tg'; break;
+  case 6: t = 'X'; break;
+  case 5: t = 'P'; break;
+  case 4: t = 'M'; break;
+  case 3: t = 'T'; break;
+  case 2: t = 'S'; break;
+  case 1: t = 'B'; break;
+  }
+  x1 = 5 + 4*c - c*Math.floor(m[0]/10);
+  x2 = 5 + 4*c - c*Math.floor(m[1]/10);
+  y1 = m[0] % 10;
+  y2 = m[1] % 10;
+  if (x1 === x2) {
+    return t + x1 + ((y2 - y1)*c > 0 ? '.' : '/') + Math.abs(y2-y1);
+  } else if (y1 === y2) {
+    return t + x1 + '-' + x2;
+  } else {
+    return t + x1 + ((y2 - y1)*c > 0 ? '.' : '/') + x2;
+  }
 }
 
 // convert from traditional board to grid
@@ -76,18 +118,33 @@ search.convert = function(b) {
 
 search.history = {};
 // negascout: http://en.wikipedia.org/wiki/Negascout
-search.psv = function(g, d, alpha, beta, c, bestMove) {
-  if (d === 0) return {value: c*search.evaluate(g), move: []};
-  var ms = search.genAllMoves(g, c), m, ab, v, i, old;
-  if (bestMove) ms = [bestMove].concat(ms);
-  for (i = 0; i < ms.length; i++) {
+search.psv = function(g, d, alpha, beta, c, test, bestMoves) {
+  var key = search.key(g), r;
+  var h = search.history[key];
+  if (h && h.color === c && h.depth >= d) {
+    //console.log('found a match', h);
+    return h;
+  }
+  if (d === 0) {
+    r = {value: c*search.evaluate(g), move: [], color: c, depth: d};
+    if (!test) search.history[key] = r;
+    return r;
+  }
+  var ms = search.genAllMoves(g, c), m, ab, v, i, old, max;
+  if (bestMoves) {
+    ms = bestMoves.concat(ms);
+    max = Math.min(4, ms.length);
+  } else {
+    max = d < 5 ? ms.length : Math.min(7, ms.length);
+  }
+  for (i = 0; i < max; i++) {
     old = g[ms[i][1]];
     g[ms[i][1]] = g[ms[i][0]];
     g[ms[i][0]] = 0;
-    ab = search.psv(g, d-1, -alpha-1, -alpha, -c);
+    ab = search.psv(g, d-1, -alpha-1, -alpha, -c, true);
     v = -ab.value;
-    if (v > alpha && v < beta && i > 0) {
-      ab = search.psv(g, d-1, -beta, -alpha, -c);
+    if (v > alpha && v < beta) {
+      ab = search.psv(g, d-1, -beta, -alpha, -c, false);
     }
     g[ms[i][0]] = g[ms[i][1]];
     g[ms[i][1]] = old;
@@ -96,13 +153,12 @@ search.psv = function(g, d, alpha, beta, c, bestMove) {
       m = [ms[i]].concat(ab.move);
     }
     if (alpha >= beta) {
-      // history heuristics implementation
-      //var key = JSON.stringify(m[i]);
-      //search.history[key] = search.history[key] ? search.history[key] + d*d : d*d;
       break;
     }
   }
-  return {value: alpha, move: m};
+  r = {value: alpha, move: m, color: c, depth: d};
+  if (!test) search.history[key] = r;
+  return r;
 }
 
 
@@ -171,7 +227,7 @@ search.mtdf = function(g, d, f, c) {
 search.tt = {}; // transposition table
 search.abmem =  function(g, d, alpha, beta, c) {
   var ms = search.genAllMoves(g, c), m, ab, i, old, v, a, b, r;
-  var key = JSON.stringify(g);
+  var key = search.key(g);
   var hv = search.tt[key];
   if (hv && hv.depth >= d) {
     if (hv.alpha >= beta) return hv.alpha;
@@ -215,7 +271,7 @@ search.abmem =  function(g, d, alpha, beta, c) {
   else { a = v; b = v; }
   r = {depth: d, alpha: a, beta: b};
   search.tt[key] = r;
-  console.log(JSON.stringify(r));
+  //console.log(JSON.stringify(r));
 
   return v;
 }
@@ -225,8 +281,8 @@ search.genAllMoves = function(g, c) {
   g.forEach(function(x,idx) {
     if (x*c > 0) ms = ms.concat(search.genMoves(g, idx).map(function(y) {return [idx, y]}));
   });
-  return ms;
-  //return ms.sort(function(a, b) { return c*search.moveValue(g, b) - c*search.moveValue(g, a); });
+  //return ms;
+  return ms.sort(function(a, b) { return c*search.moveValue(g, b) - c*search.moveValue(g, a); });
   //return ms.sort(function(a, b) { return (search.history[JSON.stringify(b)] || 0) - (search.history[JSON.stringify(a)] || 0); });
 }
 

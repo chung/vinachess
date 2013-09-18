@@ -21,10 +21,10 @@ window.onload = function() {
     var index = url.indexOf('room=');
     var room = index < 0 ? 'public' : url.substring(index+5, url.length);
     var worker = new Worker('nextMove.js');
-    var bestMove; // next best move
+    var bestMoves; // next best moves
     worker.addEventListener('message', function(e) {
       $('#status').html("Score: " + (board.turn*2-1)*e.data.next.value + " (" + e.data.next.move + ") " + e.data.time);
-      bestMove = e.data.next.move[0];
+      bestMoves = [e.data.next.move[0]];
     }, false);
 
     var socket = io.connect(url);
@@ -132,9 +132,10 @@ window.onload = function() {
         }
         if (board.lastMove.move) {
           next = search.next(board);
-          //$('#status').html("Move: " + board.lastMove.move + " | Score: " + (board.turn*2-1)*next.value + " (" + next.move + ")");
-          //bestMove = next.move[0];
-          worker.postMessage({board: board, depth: 4, bestMove: bestMove});
+          bestMoves = next.moves;
+          //console.log(next);
+          //$('#status').html("Moves: " + search.format(board, bestMoves));
+          worker.postMessage({board: board, depth: 6, bestMoves: bestMoves});
         } else {
           $('#status').html("");
         }
@@ -190,7 +191,7 @@ window.onload = function() {
         });
     });
     $('#hint').click(function() {
-        worker.postMessage({board: board, depth: 5, bestMove: bestMove});
+        worker.postMessage({board: board, depth: 8, bestMoves: bestMoves});
     });
     var clock1 = $('#clock1').FlipClock({
         autoStart: false
